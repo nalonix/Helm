@@ -27,13 +27,12 @@ export default function SignUpScreen() {
     },
   });
 
-  // The onSubmit handler for the form
   const onSubmit = async (data: SignUpFormData) => {
     setLoading(true);
     const success = await signUpUserWithEmail(data);
     console.log('Sign-up success:', success);
     if (success) {
-      reset(); // Clear form fields on successful sign-up (email sent)
+      reset(); 
     }
     setLoading(false);
   };
@@ -41,59 +40,51 @@ export default function SignUpScreen() {
   return (
     <ImageBackground
       source={backgroundImage}
-      className="flex-1 w-full h-full justify-end items-center" // Align content to the bottom
+      className="flex-1 w-full h-full justify-end items-center"
       resizeMode="cover"
-      blurRadius={30} // Apply the same blur radius as login
+      blurRadius={30}
     >
       <View
         className='rounded-t-3xl overflow-hidden w-full h-[75%]'
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
           <KeyboardAvoidingView
-            // Updated className to match login form's background and padding
             className="flex-1 pt-24 px-6 bg-helm-dark-background/85"
             behavior={Platform.OS === "ios" ? "padding" : "height"}
           >
             <Text className="text-3xl font-bold text-center text-helm-beige mb-8">Create an account</Text>
 
-            {/* Full Name Input */}
             <FormInput
               control={control}
               name="fullName"
-              label="Full Name" // Added label
+              label="Full Name"
               placeholder="John Doe"
               autoCapitalize="words"
               errors={errors}
-              // Apply the same input styling as login
               className="bg-white/10 border-white/20 rounded-xl px-6"
             />
 
-            {/* Email Input */}
             <FormInput
               control={control}
               name="email"
-              label="Email" // Added label
+              label="Email"
               placeholder="email@example.com"
               keyboardType="email-address"
               autoCapitalize="none"
               errors={errors}
-              // Apply the same input styling as login
               className="bg-white/10 border-white/20 rounded-xl px-6"
             />
 
-            {/* Password Input */}
             <FormInput
               control={control}
               name="password"
-              label="Password" // Added label
+              label="Password"
               placeholder="••••••••"
               secureTextEntry
               errors={errors}
-              // Apply the same input styling as login
               className="bg-white/10 border-white/20 rounded-xl px-6"
             />
 
-            {/* Sign Up Button using the modular Button component */}
             <Button
               onPress={handleSubmit(onSubmit)}
               isLoading={loading}

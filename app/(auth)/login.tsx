@@ -34,10 +34,7 @@ export default function LoginScreen() {
     const success = await signInUserWithEmail(data);
     console.log('Sign-in success:', success);
     if (success) {
-      reset(); // Clear form fields on successful login
-      // Navigate to the main app after successful login
-      // The root _layout.js will handle the redirect based on AuthContext
-      // For immediate feedback, you could also push here, but relying on _layout is cleaner.
+      reset();
     }
     setLoading(false);
   };
