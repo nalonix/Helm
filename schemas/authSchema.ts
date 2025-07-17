@@ -1,5 +1,3 @@
-// schemas/authSchema.ts
-
 import { z } from 'zod';
 
 export const signUpSchema = z.object({
@@ -9,3 +7,10 @@ export const signUpSchema = z.object({
 });
 
 export type SignUpFormData = z.infer<typeof signUpSchema>;
+
+export const loginSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(1, 'Password is required'),
+});
+
+export type LoginFormData = z.infer<typeof loginSchema>;

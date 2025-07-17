@@ -1,3 +1,5 @@
+import 'react-native-url-polyfill/auto';
+
 import { User } from '@supabase/supabase-js';
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { ActivityIndicator } from 'react-native';
@@ -32,7 +34,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         // Listen for auth state changes
         const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-            console.log('Auth state changed:', session);
             setUser(session?.user ?? null);
         });
 

@@ -1,4 +1,3 @@
-import 'react-native-url-polyfill/auto';
 import '../global.css';
 
 
@@ -12,6 +11,10 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { supabase } from '@/lib/supabase';
 import { AuthProvider } from '@/providers/AuthProvider';
 
+
+if (typeof globalThis.structuredClone !== 'function') {
+  globalThis.structuredClone = (obj) => JSON.parse(JSON.stringify(obj));
+}
 
 
 export default function RootLayout() {

@@ -1,17 +1,18 @@
-// components/FormInput.tsx
-
+import { cn } from '@/lib/cn';
 import React from 'react';
 import { Control, Controller, FieldErrors } from 'react-hook-form';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { Text, TextInput, View } from 'react-native';
 
 interface FormInputProps {
-  control: Control<any>; // Use 'any' for generic form control, or specify your FormData type
+  control: Control<any>;
   name: string;
   placeholder: string;
   secureTextEntry?: boolean;
   keyboardType?: 'default' | 'email-address' | 'numeric' | 'phone-pad';
   autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
-  errors: FieldErrors<any>; // Use 'any' for generic errors
+  errors: FieldErrors<any>;
+  className?: string; 
+  label?: string;
 }
 
 export const FormInput: React.FC<FormInputProps> = ({
@@ -22,45 +23,49 @@ export const FormInput: React.FC<FormInputProps> = ({
   keyboardType = 'default',
   autoCapitalize = 'none',
   errors,
+  className,
+  label,
 }) => {
+  const hasError = errors[name];
+
   return (
-    <View style={styles.inputContainer}>
+    <View className="mb-4">
+      {label && (
+        <Text
+          className="text-helm-beige text-base font-semibold mb-2 ml-1"
+        >
+          {label}
+        </Text>
+      )}
+
       <Controller
         control={control}
         name={name}
         render={({ field: { onChange, onBlur, value } }) => (
           <TextInput
-            // Using Tailwind classes (assuming they are set up in your project)
-            className="bg-zinc-800 text-white rounded-lg px-4 py-3 border border-zinc-600"
+            className={cn(
+              "bg-white/10 border border-white/20 text-white rounded-xl px-6 py-3",
+              hasError ? "border-red-500" : "border-white/20",
+              className
+            )}
             placeholder={placeholder}
-            placeholderTextColor="#a3a3a3"
+            placeholderTextColor="#a38e7c"
             onBlur={onBlur}
             onChangeText={onChange}
             value={value}
             secureTextEntry={secureTextEntry}
             keyboardType={keyboardType}
             autoCapitalize={autoCapitalize}
-            style={errors[name] && styles.inputErrorBorder} // Apply error border style
           />
         )}
       />
-      {/* Display error message */}
-      {errors[name] && <Text style={styles.errorText}>{errors[name]?.message as string}</Text>}
+      {hasError && (
+        <Text
+          className="text-red-500 text-xs mt-1 ml-1"
+        >
+          {errors[name]?.message as string}
+        </Text>
+      )}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  inputContainer: {
-    marginBottom: 16, // Space between inputs
-  },
-  inputErrorBorder: {
-    borderColor: 'red', // Red border for inputs with errors
-  },
-  errorText: {
-    color: 'red',
-    fontSize: 12,
-    marginTop: 4,
-    marginLeft: 4, // Align with input padding
-  },
-});

@@ -1,17 +1,15 @@
-import { router } from 'expo-router'
+import { Link } from 'expo-router'
 import React from 'react'
-import { Text, TouchableOpacity } from 'react-native'
+import { Text } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
-export default function Index() {
+export default function Splash() {
   return (
     <SafeAreaView>
-      <Text>Log In</Text>
-      <TouchableOpacity
-        onPress={() => router.push('/(auth)/register')}
-      >
-        <Text>Go to Register</Text>
-      </TouchableOpacity>
+      <Text>Auth Splash</Text>
+      <Link href={"/(auth)/login"}>
+        <Text className='text-blue-500'>Get Started</Text>
+      </Link>
     </SafeAreaView>
   )
 }

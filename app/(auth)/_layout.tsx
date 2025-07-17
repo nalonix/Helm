@@ -9,15 +9,19 @@ export default function AuthLayout() {
         return <Redirect href="/(app)/(tabs)/events" />;
     }
 
+    // TODO: flashing white background on navigation
 
     return (
         <Stack 
             screenOptions={{
-                animation: 'slide_from_right',
+                headerShown: false,
+                animation: 'fade',
+                animationDuration: 800,
+                contentStyle: { backgroundColor: '#18181b' },
             }}
         >
-            <Stack.Screen name="splash" options={{ headerShown: false, title: "Splash" }} />
-            <Stack.Screen name="index" options={{ title: "Login" }} />
+            <Stack.Screen name="index" options={{ title: "Splash" }} />
+            <Stack.Screen name="login" options={{ title: "Login" }} />
             <Stack.Screen name="register" options={{ title: "Register" }} />
         </Stack>
     );

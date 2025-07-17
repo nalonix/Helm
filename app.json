@@ -14,7 +14,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#18181b"
       },
       "edgeToEdgeEnabled": true,
       "package": "com.nalonix.helm"
@@ -32,7 +32,7 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#FF661E"
+          "backgroundColor": "#18181b"
         }
       ]
     ],

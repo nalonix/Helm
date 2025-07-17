@@ -1,63 +1,17 @@
-// app/(auth)/register.tsx
-
 import { Link } from 'expo-router';
 import React from 'react';
-import { Alert, Keyboard, KeyboardAvoidingView, Platform, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { ImageBackground, Keyboard, KeyboardAvoidingView, Platform, Text, TouchableWithoutFeedback, View } from 'react-native'; // Import ImageBackground
 
-// Import modularized components and functions
-import { FormInput } from '@/components/FormInput'; // Assuming this path is correct
-import { supabase } from '@/lib/supabase';
+import { Button } from '@/components/Button';
+import { FormInput } from '@/components/FormInput';
+import { signUpUserWithEmail } from '@/lib/auth';
 import { SignUpFormData, signUpSchema } from '@/schemas/authSchema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 
-
-
 export default function SignUpScreen() {
   const [loading, setLoading] = React.useState(false);
-
-
- async function signUpUserWithEmail(data: SignUpFormData): Promise<boolean> {
-  console.log('Attempting to sign up with email:', data.email);
-
-  try {
-    const {
-      data: { session },
-      error,
-    } = await supabase.auth.signUp({
-      email: data.email,
-      password: data.password,
-      options: {
-        data: {
-          full_name: data.fullName, // Pass full name as user metadata
-        },
-      },
-    });
-
-    console.log('Supabase sign-up response:', { session, error });
-
-    if (error) {
-      Alert.alert('Sign Up Error', error.message);
-      console.error('Supabase sign-up error:', error);
-      return false;
-    }
-
-    if (!session) {
-      Alert.alert('Verification', 'Please check your inbox for email verification!');
-      console.log('Sign-up successful, awaiting email verification.');
-      return true; // Indicates that the sign-up email was sent
-    }
-
-    // This case might be hit if auto-login is enabled and successful,
-    // but typically for email/password, it requires verification.
-    console.log('Sign-up successful and session established (unlikely without verification).');
-    return true;
-  } catch (err: any) { // Catch any unexpected errors during the await call
-    Alert.alert('Network Error', 'Could not connect to the server. Please try again.');
-    console.error('Unexpected sign-up error:', err);
-    return false;
-  }
-}
+  const backgroundImage = require('@/assets/images/Helm.jpg');
 
   const {
     control,
@@ -85,66 +39,79 @@ export default function SignUpScreen() {
   };
 
   return (
-    // The outer View ensures KeyboardAvoidingView has a flex parent to work correctly
-    <View style={{ flex: 1 }}>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <KeyboardAvoidingView
-          // Using Tailwind classes for styling (as in your original code)
-          className="flex-1 justify-center px-6 bg-black"
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          // contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }} // Optional: for ScrollView inside KAV
-        >
-          <Text className="text-3xl font-bold text-center text-white mb-8">Create an account</Text>
-
-          {/* Full Name Input using modularized FormInput */}
-          <FormInput
-            control={control}
-            name="fullName"
-            placeholder="Full Name"
-            autoCapitalize="words"
-            errors={errors}
-          />
-
-          {/* Email Input using modularized FormInput */}
-          <FormInput
-            control={control}
-            name="email"
-            placeholder="Email"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            errors={errors}
-          />
-
-          {/* Password Input using modularized FormInput */}
-          <FormInput
-            control={control}
-            name="password"
-            placeholder="Password"
-            secureTextEntry
-            errors={errors}
-          />
-
-          <TouchableOpacity
-            className="bg-white rounded-lg py-3 mb-4"
-            onPress={handleSubmit(onSubmit)} // Use handleSubmit to trigger validation and onSubmit
-            disabled={loading}
+    <ImageBackground
+      source={backgroundImage}
+      className="flex-1 w-full h-full justify-end items-center" // Align content to the bottom
+      resizeMode="cover"
+      blurRadius={30} // Apply the same blur radius as login
+    >
+      <View
+        className='rounded-t-3xl overflow-hidden w-full h-[75%]'
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+          <KeyboardAvoidingView
+            // Updated className to match login form's background and padding
+            className="flex-1 pt-24 px-6 bg-helm-dark-background/85"
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
           >
-            <Text className="text-black text-center font-semibold text-lg">
-              {loading ? 'Loading...' : 'Sign Up'}
-            </Text>
-          </TouchableOpacity>
+            <Text className="text-3xl font-bold text-center text-helm-beige mb-8">Create an account</Text>
 
-          <View className="flex-row justify-center mt-2">
-            <Text className="text-gray-400">Already have an account? </Text>
-            <Link href="/(auth)" asChild>
-              <Text className="text-blue-400 font-semibold">Login</Text>
-            </Link>
-          </View>
-        </KeyboardAvoidingView>
-      </TouchableWithoutFeedback>
-    </View>
+            {/* Full Name Input */}
+            <FormInput
+              control={control}
+              name="fullName"
+              label="Full Name" // Added label
+              placeholder="John Doe"
+              autoCapitalize="words"
+              errors={errors}
+              // Apply the same input styling as login
+              className="bg-white/10 border-white/20 rounded-xl px-6"
+            />
+
+            {/* Email Input */}
+            <FormInput
+              control={control}
+              name="email"
+              label="Email" // Added label
+              placeholder="email@example.com"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              errors={errors}
+              // Apply the same input styling as login
+              className="bg-white/10 border-white/20 rounded-xl px-6"
+            />
+
+            {/* Password Input */}
+            <FormInput
+              control={control}
+              name="password"
+              label="Password" // Added label
+              placeholder="••••••••"
+              secureTextEntry
+              errors={errors}
+              // Apply the same input styling as login
+              className="bg-white/10 border-white/20 rounded-xl px-6"
+            />
+
+            {/* Sign Up Button using the modular Button component */}
+            <Button
+              onPress={handleSubmit(onSubmit)}
+              isLoading={loading}
+              variant={"primary"} 
+              className="mb-4" 
+            >
+              Sign Up
+            </Button>
+
+            <View className="flex-row justify-center mt-2">
+              <Text className="text-gray-400">Already have an account? </Text>
+              <Link href="/(auth)/login" asChild> 
+                <Text className="text-helm-dark-red font-semibold">Login</Text>
+              </Link>
+            </View>
+          </KeyboardAvoidingView>
+        </TouchableWithoutFeedback>
+      </View>
+    </ImageBackground>
   );
 }
-
-// No specific styles needed here anymore, as they are in FormInput.tsx
-const styles = StyleSheet.create({});

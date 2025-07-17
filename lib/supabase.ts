@@ -1,7 +1,11 @@
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import { createClient, processLock } from '@supabase/supabase-js'
-import { AppState } from 'react-native'
-import 'react-native-url-polyfill/auto'
+// // Polyfill for structuredClone if not available (for React Native/Expo)
+// if (typeof global.structuredClone !== 'function') {
+//   global.structuredClone = (obj) => JSON.parse(JSON.stringify(obj));
+// }
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { createClient } from '@supabase/supabase-js';
+import { AppState } from 'react-native';
 
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY
@@ -20,16 +24,15 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false,
-    lock: processLock,
   },
 })
 
 
 AppState.addEventListener('change', (state) => {
-  console.log('AppState changed: [lib/supabase.ts]', state)
   if (state === 'active') {
     supabase.auth.startAutoRefresh()
   } else {
     supabase.auth.stopAutoRefresh()
   }
 })
+
