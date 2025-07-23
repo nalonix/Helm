@@ -14,6 +14,8 @@ import { Alert } from 'react-native';
 
 export async function createEvent(data: CreateEventFormData, organizerId: string): Promise<boolean> {
   console.log('Attempting to create event:', data.title, 'by organizer:', organizerId);
+  console.log("🟢🟢🟢🟢🟢🟢🟢🔮🔮🧮🧮")
+
 
   try {
     const { error } = await supabase
@@ -21,8 +23,9 @@ export async function createEvent(data: CreateEventFormData, organizerId: string
       .insert({
         title: data.title,
         description: data.description,
-        // event_date: data.date, // Assuming your DB column is event_date
-        // event_time: data.time, // Assuming your DB column is event_time
+        date: data.date, // Assuming your DB column is event_date
+        start_time: data.time, // Assuming your DB column is event_time
+        end_time: data.time, // Assuming your DB column is event_time
         // location: data.location,
         host: organizerId,
       });
@@ -34,6 +37,9 @@ export async function createEvent(data: CreateEventFormData, organizerId: string
     }
 
     Alert.alert('Success', 'Event created successfully!');
+    // if (user?.id) {
+    //     queryClient.invalidateQueries({ queryKey: ['myUpcomingEvents', user.id] });
+    // }
     console.log('Event created successfully:', data.title);
     return true;
   } catch (err: any) {

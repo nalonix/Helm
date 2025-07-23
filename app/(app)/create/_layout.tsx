@@ -7,6 +7,6 @@ export default function CreateEventLayout() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" options={{ title: "Create Event" }}  />
       <Stack.Screen name="preview" options={{ title: "Preview Event", animation: "slide_from_bottom" }} />
-    </Stack>
+    </Stack>  
   )
 }

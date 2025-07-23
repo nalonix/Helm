@@ -66,6 +66,7 @@ export default function LoginScreen() {
             keyboardType="email-address"
             autoCapitalize="none"
             errors={errors}
+            className='mb-4'
           />
 
           {/* Password Input */}
@@ -81,7 +82,7 @@ export default function LoginScreen() {
             onPress={handleSubmit(onSubmit)}
             isLoading={loading}
             variant={"primary"}
-            className="mb-4" 
+            className="my-4" 
           >
             Login
           </Button>

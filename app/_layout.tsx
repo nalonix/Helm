@@ -11,6 +11,8 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { supabase } from '@/lib/supabase';
 import { AuthProvider } from '@/providers/AuthProvider';
 
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
 
 if (typeof globalThis.structuredClone !== 'function') {
   globalThis.structuredClone = (obj) => JSON.parse(JSON.stringify(obj));
@@ -22,6 +24,9 @@ export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/Poppins-Regular.ttf'),
   });
+
+  const queryClient = new QueryClient();
+
 
   if (!loaded) {
     // Async font loading only occurs in development.
@@ -44,10 +49,12 @@ export default function RootLayout() {
   // TODO: Check with gpt if wraping with safe area view is good
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AuthProvider>
-        <Slot />
-        <StatusBar style="auto" />
-      </AuthProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <Slot />
+          <StatusBar style="auto" />
+        </AuthProvider>
+      </QueryClientProvider>
     </ThemeProvider>
   );
 }

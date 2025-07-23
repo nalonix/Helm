@@ -89,7 +89,7 @@ export default function SignUpScreen() {
               onPress={handleSubmit(onSubmit)}
               isLoading={loading}
               variant={"primary"} 
-              className="mb-4" 
+              className="my-4" 
             >
               Sign Up
             </Button>
