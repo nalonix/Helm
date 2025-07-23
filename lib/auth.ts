@@ -22,7 +22,8 @@ export async function signUpUserWithEmail(data: SignUpFormData): Promise<boolean
       password: data.password,
       options: {
         data: {
-          full_name: data.fullName, // Pass full name as user metadata
+          full_name: data.fullName,
+          username: data.username,
         },
       },
     });

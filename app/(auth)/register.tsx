@@ -66,6 +66,16 @@ export default function SignUpScreen() {
 
             <FormInput
               control={control}
+              name="username"
+              label="Username"
+              placeholder="johndoe"
+              autoCapitalize='none'
+              errors={errors}
+              className="bg-white/10 border-white/20 rounded-xl px-6"
+            />
+
+            <FormInput
+              control={control}
               name="email"
               label="Email"
               placeholder="email@example.com"

@@ -28,8 +28,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const session = supabase.auth.getSession().then(({ data }) => {
             setUser(data.session?.user ?? null);
             setIsLoading(false);
-            
-            
         });
 
         // Listen for auth state changes

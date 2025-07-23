@@ -1,30 +1,15 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useCallback, useMemo, useRef } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useMemo, useRef } from 'react';
+import { Text, TouchableOpacity, View } from 'react-native';
 
+import SendInvite from '@/components/SendInvite';
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
+
+
 
 export default function HostEventDetail() {
   const { id } = useLocalSearchParams();
-
-  // ref
-  const bottomSheetRef = useRef<BottomSheet>(null);
-
-  const snapPoints = useMemo(() => ['70%'], []);
-
-
-  // callbacks
-  const handleSheetChanges = useCallback((index: number) => {
-    console.log('handleSheetChanges', index);
-  }, []);
-
-
-  const openSheet = () => {
-    bottomSheetRef.current?.expand();
-  };
-
-
-
+  
   return (
     <View className='flex-1'>
       <Text>HostEventDetail {id}</Text>
@@ -33,23 +18,38 @@ export default function HostEventDetail() {
         >
         <Text>Manage</Text>
       </TouchableOpacity>
+      <ShareSheet />
+    </View>
+  )
+}
+
+function ShareSheet(){
+  const { id } = useLocalSearchParams();
+
+  // ref
+  const bottomSheetRef = useRef<BottomSheet>(null);
+
+  const snapPoints = useMemo(() => ['70%'], []);
+
+  const openSheet = () => {
+    bottomSheetRef.current?.expand();
+  };
+  return (
+    <View className='flex-1'>
       <TouchableOpacity
           onPress={openSheet}
           className="self-center px-4 py-2 bg-gray-300 rounded"
         >
-        <Text className="text-black text-base">Open Invite Modal</Text>
+        <Text className="text-black text-base">Share</Text>
       </TouchableOpacity>
-
-
       <BottomSheet
         ref={bottomSheetRef}
         index={-1}
-        onChange={handleSheetChanges}
         enablePanDownToClose
         snapPoints={snapPoints}
       >
-        <BottomSheetView style={styles.contentContainer}>
-          <Text>Awesome 🎉</Text>
+        <BottomSheetView className='h-full flex px-6 py-4 align-center'>
+          <SendInvite />
         </BottomSheetView>
       </BottomSheet>
     </View>
@@ -57,15 +57,10 @@ export default function HostEventDetail() {
 }
 
 
-const styles = StyleSheet.create({
-  contentContainer: {
-    flex: 1,
-    padding: 36,
-    alignItems: 'center',
-    backgroundColor: 'pink',
-  },
 
-});
+
+
+
 
 
 
