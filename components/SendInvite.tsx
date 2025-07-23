@@ -1,10 +1,11 @@
 import useDebounce from '@/hooks/useDebounce';
-import { supabase } from '@/lib/supabase'; // Adjust this import path as needed
-import { Ionicons } from '@expo/vector-icons';
-import { useQuery } from '@tanstack/react-query';
+import { addNotification } from '@/lib/db/notifications';
+import { supabase } from '@/lib/supabase';
+import { Feather } from '@expo/vector-icons';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'; // Import useMutation and useQueryClient
 import { useLocalSearchParams } from 'expo-router';
 import React, { useState } from 'react';
-import { ActivityIndicator, FlatList, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, Image, Text, TextInput, TouchableOpacity, View } from 'react-native'; // Import Alert for feedback
 
 // Type for a user profile returned by your search query
 interface UserProfile {
@@ -12,57 +13,149 @@ interface UserProfile {
   username: string;
   full_name?: string | null;
   avatar_url?: string | null;
-  is_invited?: boolean;
+  is_invited: boolean; // Confirmed to be boolean from fetch function
 }
 
+// Interface for the payload to send to the invitations table
+interface InvitePayload {
+  user_id: string;
+  event_id: string;
+}
 
-// Function to fetch users from Supabase by username
-const fetchUsersByUsername = async (username: string | null, eventId: string): Promise<UserProfile[]> => {
-  
+// Function to send the invitation
+const sendInvitation = async (payload: InvitePayload) => {
+  const { data, error } = await supabase
+    .from('invitations')
+    .insert([payload]) // Insert the new invitation record
+    .select(); // Select the inserted data to confirm
+
+  if (error) {
+    console.error('Supabase invitation error:', error);
+    throw new Error(error.message || 'Failed to send invitation');
+  }
+
+  addNotification({
+    message: `You have received an invitation.`,
+    type: "invitation",
+    event_id: payload.event_id,
+    user_id: payload.user_id
+  })
+
+  return data;
+};
+
+// Function to fetch users and invitation status (remains the same)
+const fetchUsersAndInvitationStatus = async (
+  username: string | null,
+  eventId: string
+): Promise<UserProfile[]> => {
   if (!username || username.length < 3) {
+    return [];
+  }
+  if (!eventId) {
+    console.warn("Event ID is missing. Cannot determine invitation status for users.");
     return [];
   }
 
 
-
-  // Query your 'profiles' table for matching usernames
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('id, username, full_name, avatar_url') 
-    .ilike('username', `%${username}%`); 
-
-  if (error) {
-    console.error('Supabase username search error:', error);
-    throw new Error(error.message || 'Failed to search users by username');
+  // Logged in host user 
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    console.error('Authentication error:', authError);
+    throw new Error("Not authenticated or current user ID not found.");
   }
 
-  return data as UserProfile[];
+
+  const { data: profilesData, error: profilesError } = await supabase
+    .from('profiles')
+    .select('id, username, full_name, avatar_url')
+    .ilike('username', `%${username}%`)
+    .neq('id', user.id);
+    
+
+  if (profilesError) {
+    console.error('Supabase profile search error:', profilesError);
+    throw new Error(profilesError.message || 'Failed to search users');
+  }
+
+  if (!profilesData || profilesData.length === 0) {
+    return [];
+  }
+
+  const foundProfileIds = profilesData.map(p => p.id);
+
+  const { data: invitationsData, error: invitationsError } = await supabase
+    .from('invitations')
+    .select('user_id')
+    .eq('event_id', eventId)
+    .in('user_id', foundProfileIds);
+
+  if (invitationsError) {
+    console.error('Supabase invitations fetch error:', invitationsError);
+    throw new Error(invitationsError.message || 'Failed to fetch specific invitations');
+  }
+
+  const invitedUserIds = new Set(
+    (invitationsData || []).map((inv: { user_id: string }) => inv.user_id)
+  );
+
+  const usersWithStatus: UserProfile[] = profilesData.map(profile => ({
+    ...profile,
+    is_invited: invitedUserIds.has(profile.id),
+  }));
+
+
+  return usersWithStatus;
 };
 
 
 export default function UserSearchScreen() {
-  const { id: eventId } = useLocalSearchParams();
+  const { id: eventId } = useLocalSearchParams(); // eventId will be string | string[] | undefined
+
+  // Ensure eventId is a string for the fetch functions and mutation
+  const currentEventId = typeof eventId === 'string' ? eventId : undefined;
 
   const [usernameSearchTerm, setUsernameSearchTerm] = useState('');
-  const debouncedUsername = useDebounce(usernameSearchTerm, 500); 
+  const debouncedUsername = useDebounce(usernameSearchTerm, 500);
 
+  const queryClient = useQueryClient(); // Initialize TanStack Query client
+
+  // Query for searching users
   const {
     data: searchResults,
     isLoading,
     isError,
     error,
   } = useQuery<UserProfile[], Error>({
-    queryKey: ['usersSearchByUsername', debouncedUsername],
-    queryFn: () => fetchUsersByUsername(debouncedUsername, eventId as string),
-    enabled: debouncedUsername.length >= 3,
+    queryKey: ['usersWithInvitationStatus', debouncedUsername, currentEventId],
+    queryFn: () => fetchUsersAndInvitationStatus(debouncedUsername, currentEventId as string), // Cast as string here as enabled check handles `undefined`
+    enabled: debouncedUsername.length >= 3 && !!currentEventId, // Enable only if search term and eventId are valid
     placeholderData: (previousData) => previousData,
     staleTime: 1000 * 60 * 2,
   });
 
+  // Mutation for sending invitations
+  const {
+    mutate: inviteUser, // Function to call the mutation
+    isPending: isInviting, // Loading state for the mutation
+  } = useMutation({
+    mutationFn: sendInvitation,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['usersWithInvitationStatus', debouncedUsername, currentEventId],
+      });
+      Alert.alert('Success', 'Invitation sent!');
+    },
+    onError: (err) => {
+      Alert.alert('Error', `Failed to send invitation: ${err.message}`);
+    },
+  });
+
+
   return (
     <View className='flex-1 p-2'>
-      <View className='flex flex-row gap-2 items-end mb-4'>
-        <Ionicons name="people-outline" size={32} color="black" />
+      <View className='flex flex-row gap-3 items-end mb-4'>
+        <Feather name="users" size={32} color="black" />
         <Text className='text-3xl font-semibold'>Invite</Text>
       </View>
 
@@ -72,15 +165,15 @@ export default function UserSearchScreen() {
         value={usernameSearchTerm}
         onChangeText={setUsernameSearchTerm}
         autoCapitalize="none"
-        autoCorrect={false} 
+        autoCorrect={false}
       />
 
-      {/* Loading */}
+      {/* Loading indicator for the search query */}
       {isLoading && debouncedUsername.length >= 3 && (
         <ActivityIndicator size="small" color="#0000ff" className='mb-2' />
       )}
 
-      {/* Error */}
+      {/* Error message for the search query */}
       {isError && (
         <Text className='text-red-500 mb-2'>Error searching users: {error?.message}</Text>
       )}
@@ -91,30 +184,45 @@ export default function UserSearchScreen() {
           data={searchResults}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <TouchableOpacity
-              className='bg-white p-3 rounded-lg mb-2 shadow-sm border border-zinc-200 flex-row items-center'
-              onPress={() => {
-                // TODO: Implement what happens when a user is selected.
-                // E.g., navigate to their profile, show an invite modal, etc.
-                console.log('Selected user:', item.username);
-                alert(`You selected: ${item.username}`);
-
-              }}
-            >
-              {/* Optional: Display user avatar */}
-              {item.avatar_url && (
-                <Image
-                  source={{ uri: supabase.storage.from('avatars').getPublicUrl(item.avatar_url).data.publicUrl }}
-                  style={{ width: 40, height: 40, borderRadius: 20, marginRight: 12 }}
-                />
-              )}
-              <View className='flex-1'>
-                <Text className='text-lg font-semibold'>{item.username}</Text>
-                {item.full_name && <Text className='text-sm text-gray-600'>{item.full_name}</Text>}
+            <View className='bg-white rounded-2xl mb-2 shadow-sm border border-zinc-200 flex-row items-center overflow-hidden'>
+              <View className='flex flex-row'>
+                <View className='p-0.5'>
+                  {item.avatar_url ? (
+                    <Avatar url={item.avatar_url} />
+                  ) : (
+                    <AvatarPlaceHolder />
+                  )}
+                </View>
+                <View className='flex-1 justify-center p-2'>
+                  {item.full_name && <Text className='text-lg font-semibold'>{item.full_name}</Text>}
+                  <Text className='text-gray-600 font-semibold'>@{item.username}</Text>
+                </View>
+                {/* Conditional rendering for Invited/Invite button */}
+                {item.is_invited ? (
+                  <View className='flex items-center justify-center aspect-square h-full bg-green-50'>
+                    <Feather name="check-circle" size={24} color="green" />
+                  </View>
+                ) : (
+                  <TouchableOpacity
+                    className='flex items-center justify-center aspect-square h-full bg-blue-50'
+                    onPress={() => {
+                      if (currentEventId && item.id && !isInviting) { // Ensure data is ready and not already inviting
+                        inviteUser({ user_id: item.id, event_id: currentEventId });
+                      } else if (!currentEventId) {
+                          Alert.alert("Error", "Event ID not found to send invitation.");
+                      }
+                    }}
+                    disabled={isInviting || !currentEventId} // Disable button if inviting or if eventId is missing
+                  >
+                    {isInviting ? ( // Show activity indicator if an invitation is being sent
+                      <ActivityIndicator size="small" color="blue" />
+                    ) : (
+                      <Feather name="send" size={24} color="blue" />
+                    )}
+                  </TouchableOpacity>
+                )}
               </View>
-              {/* Optional: Add an action button like "Add" or "Invite" */}
-              <Ionicons name="person-add-outline" size={24} color="blue" />
-            </TouchableOpacity>
+            </View>
           )}
           ListEmptyComponent={
             <Text className='text-gray-500 text-center mt-4'>
@@ -123,12 +231,28 @@ export default function UserSearchScreen() {
           }
         />
       ) : debouncedUsername.length >= 3 && !isLoading && !isError ? (
-        // Message when search is active but no results found
         <Text className='text-gray-500 text-center mt-4'>No users found with that username.</Text>
       ) : (
-        // Initial state or when search term is too short
         <Text className='text-gray-500 text-center mt-4'>Start typing to search for users.</Text>
       )}
     </View>
   );
+}
+
+
+function AvatarPlaceHolder(){
+  return(
+    <View className='bg-zinc-400 h-12 w-12 m-2 rounded-full'>
+    </View>
+  )
+}
+
+
+function Avatar({ url }: {url : string}){
+  return(
+    <Image
+      source={{ uri: supabase.storage.from('avatars').getPublicUrl(url).data.publicUrl }}
+      style={{ width: 40, height: 40, borderRadius: 20, marginRight: 12 }}
+    />
+  )
 }
