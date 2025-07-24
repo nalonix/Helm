@@ -173,6 +173,8 @@ export default function NotificationsScreen() {
 
                 if(item.type == 'invitation'){
                   router.push(`/(app)/(tabs)/events/${item.event_id}`)
+                }else if(item.type == 'rsvpupdate'){
+                  router.push(`/(app)/(tabs)/events/host/${item.event_id}/manage`)
                 }
               }}
             >

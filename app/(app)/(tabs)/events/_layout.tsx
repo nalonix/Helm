@@ -27,6 +27,7 @@ export default function EventsLayout() {
         headerShown: true,
         headerTitle: () => <Heading header='Helm' />,
         headerRight: () => <NotificationsButton />,
+        headerLeft: () => null, 
         headerStyle: {
           backgroundColor: '#f8f8f8',
           shadowOpacity: 0,
@@ -39,6 +40,7 @@ export default function EventsLayout() {
         headerShadowVisible: false,
       }}/>
       <Stack.Screen name="[id]" options={{ headerShown: false }} />
+      <Stack.Screen name="host" options={{ headerShown: false }} />
     </Stack>
   );
 }

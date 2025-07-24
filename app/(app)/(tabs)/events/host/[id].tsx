@@ -1,67 +1,64 @@
-import { router, useLocalSearchParams } from 'expo-router';
-import { useMemo, useRef } from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { router, useLocalSearchParams } from "expo-router";
+import { useMemo, useRef } from "react";
+import { Text, TouchableOpacity, View } from "react-native";
 
-import SendInvite from '@/components/SendInvite';
-import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
-
-
+import SendInvite from "@/components/SendInvite";
+import BottomSheet, {
+  BottomSheetBackdrop,
+  BottomSheetView,
+} from "@gorhom/bottom-sheet";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HostEventDetail() {
   const { id } = useLocalSearchParams();
-  
-  return (
-    <View className='flex-1'>
-      <Text>HostEventDetail {id}</Text>
-      <TouchableOpacity
-        onPress={() => router.push(`/events/host/${id}/manage/general`)}
-        >
-        <Text>Manage</Text>
-      </TouchableOpacity>
-      <ShareSheet />
-    </View>
-  )
-}
 
-function ShareSheet(){
-  const { id } = useLocalSearchParams();
-
-  // ref
+  // Ref for controlling the bottom sheet
   const bottomSheetRef = useRef<BottomSheet>(null);
+  const snapPoints = useMemo(() => ["60%"], []);
+  const openSheet = () => bottomSheetRef.current?.expand();
 
-  const snapPoints = useMemo(() => ['70%'], []);
-
-  const openSheet = () => {
-    bottomSheetRef.current?.expand();
-  };
   return (
-    <View className='flex-1'>
-      <TouchableOpacity
-          onPress={openSheet}
-          className="self-center px-4 py-2 bg-gray-300 rounded"
+    <SafeAreaView className="flex-1">
+      <View className="flex-1 px-4">
+        <Text>HostEventDetail {id}</Text>
+
+        <TouchableOpacity
+          onPress={() => router.push(`/events/host/${id}/manage/general`)}
         >
-        <Text className="text-black text-base">Share</Text>
-      </TouchableOpacity>
+          <Text>Manage</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => router.back()}>
+          <Text>Close</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={openSheet}
+          className="self-center px-4 py-2 bg-gray-300 rounded mt-4"
+        >
+          <Text className="text-black text-base">Share</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* BottomSheet outside of View for full-screen backdrop */}
       <BottomSheet
         ref={bottomSheetRef}
         index={-1}
-        enablePanDownToClose
+        enablePanDownToClose={true}
         snapPoints={snapPoints}
+        backdropComponent={(props) => (
+          <BottomSheetBackdrop
+            {...props}
+            appearsOnIndex={0}
+            disappearsOnIndex={-1}
+            pressBehavior="close"
+          />
+        )}
       >
-        <BottomSheetView className='h-full flex px-6 py-4 align-center'>
+        <BottomSheetView className="h-full px-5 py-4">
           <SendInvite />
         </BottomSheetView>
       </BottomSheet>
-    </View>
-  )
+    </SafeAreaView>
+  );
 }
-
-
-
-
-
-
-
-
-
-
