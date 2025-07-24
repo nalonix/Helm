@@ -4,7 +4,7 @@ import { Stack, useRouter } from 'expo-router'; // Import Stack
 import React from 'react';
 import { TouchableOpacity, View } from 'react-native';
 
-// Your NotificationsButton component (no changes needed here)
+// NotificationsButton component
 function NotificationsButton() {
   const router = useRouter();
 
@@ -27,17 +27,11 @@ export default function EventsLayout() {
         headerShown: true,
         headerTitle: () => <Heading header='Helm' />,
         headerRight: () => <NotificationsButton />,
-        headerLeft: () => null, 
         headerStyle: {
-          backgroundColor: '#f8f8f8',
-          shadowOpacity: 0,
-          shadowOffset: { height: 0, width: 0 },
-          shadowRadius: 0,
-          elevation: 0,
-          borderBottomWidth: 0,
-          height: 100
+          backgroundColor: '#f8f8f8'
         },
         headerShadowVisible: false,
+        headerBackVisible: false,
       }}/>
       <Stack.Screen name="[id]" options={{ headerShown: false }} />
       <Stack.Screen name="host" options={{ headerShown: false }} />

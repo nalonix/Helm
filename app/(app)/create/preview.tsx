@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import React from 'react';

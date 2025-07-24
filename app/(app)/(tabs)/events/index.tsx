@@ -59,7 +59,7 @@ export default function EventsIndex() {
               return (
                 <TouchableOpacity
                   onPress={() => router.push(`/(app)/(tabs)/events/${item.id}`)}
-                  className="border border-zinc-100  bg-white p-4 rounded-lg mb-2 shadow"
+                  className="border border-zinc-300  bg-white p-4 rounded-lg mb-2 shadow"
                 >
                   <Text className="text-lg font-semibold">{item.title}</Text>
                   <Text className="text-sm text-gray-600">{item.date}</Text>

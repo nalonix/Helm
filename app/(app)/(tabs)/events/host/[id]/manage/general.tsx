@@ -1,12 +1,13 @@
 import { useLocalSearchParams } from 'expo-router';
 import React from 'react';
-import { Text, View } from 'react-native';
+import { Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function General() {
   const {id} = useLocalSearchParams();
   return (
-    <View>
+    <SafeAreaView>
       <Text>general {id}</Text>
-    </View>
+    </SafeAreaView>
   )
 }

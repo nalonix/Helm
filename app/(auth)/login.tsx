@@ -7,12 +7,14 @@ import { FormInput } from '@/components/FormInput';
 import { signInUserWithEmail } from '@/lib/auth';
 import { LoginFormData, loginSchema } from '@/schemas/authSchema';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
 
 export default function LoginScreen() {
   const [loading, setLoading] = React.useState(false);
   const backgroundImage = require('@/assets/images/Helm.jpg'); 
+
+  const router = useRouter()
   
 
   const {
@@ -36,6 +38,8 @@ export default function LoginScreen() {
     if (success) {
       reset();
     }
+    console.log(router)
+    // router.push('/(app)/(tabs)/events')
     setLoading(false);
   };
 

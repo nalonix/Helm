@@ -1,4 +1,4 @@
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import React from 'react';
 import { ImageBackground, Keyboard, KeyboardAvoidingView, Platform, Text, TouchableWithoutFeedback, View } from 'react-native'; // Import ImageBackground
 
@@ -12,6 +12,8 @@ import { useForm } from 'react-hook-form';
 export default function SignUpScreen() {
   const [loading, setLoading] = React.useState(false);
   const backgroundImage = require('@/assets/images/Helm.jpg');
+
+  const router = useRouter()
 
   const {
     control,
@@ -34,6 +36,7 @@ export default function SignUpScreen() {
     if (success) {
       reset(); 
     }
+    // router.push('/(app)/(tabs)/events')
     setLoading(false);
   };
 

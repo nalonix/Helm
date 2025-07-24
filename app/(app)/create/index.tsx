@@ -39,6 +39,7 @@ import { useAuth } from '@/providers/AuthProvider';
 import { CreateEventFormData, createEventSchema } from '@/schemas/eventSchema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
+import { ScrollView } from 'react-native-gesture-handler';
 
 export default function CreateEventScreen() {
   const [loading, setLoading] = React.useState(false); // Loading state for the preview button
@@ -152,8 +153,9 @@ export default function CreateEventScreen() {
       resizeMode="cover"
       blurRadius={20}
     >
-      <View
-        className='rounded-t-3xl overflow-hidden w-full h-full bg-zinc-100/5'
+      <ScrollView
+        className='flex-1 w-full h-full bg-zinc-100/5'
+        // className='flex-1 rounded-t-3xl overflow-hidden w-full h-full bg-zinc-100/5'
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
           <KeyboardAvoidingView
@@ -289,14 +291,14 @@ export default function CreateEventScreen() {
             </Button>
 
             <View className="flex-row justify-center mt-2">
-              <TouchableOpacity onPress={() => router.back()}>
+              <TouchableOpacity onPress={() => router.push('/(app)/(tabs)/events')}>
                 <Text className="text-helm-dark-red font-semibold">Cancel</Text>
               </TouchableOpacity>
             </View>
             <View className='h-20'></View>
           </KeyboardAvoidingView>
         </TouchableWithoutFeedback>
-      </View>
+      </ScrollView>
     </ImageBackground>
   );
 }

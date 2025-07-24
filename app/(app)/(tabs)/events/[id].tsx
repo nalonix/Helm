@@ -1,3 +1,4 @@
+import GetTicket from "@/components/GetTicket";
 import RSVPResponse from "@/components/RSVPResponse";
 import { useEventDetails } from "@/hooks/useEventDetails";
 import { Feather } from "@expo/vector-icons";
@@ -9,7 +10,6 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
 // Define the possible RSVP statuses
 type RsvpStatus = "Going" | "May Be" | "Not Going" | null;
 
@@ -91,6 +91,10 @@ function RSVPSheet({ eventId, hostId, status, onClose }: RSVPSheetProps) {
   );
 }
 
+
+
+
+
 export default function EventDetail() {
   // This component will display the details of a specific event
   const { id } = useLocalSearchParams();
@@ -169,6 +173,7 @@ export default function EventDetail() {
       <TouchableOpacity onPress={() => router.back()}>
         <Text>Close</Text>
       </TouchableOpacity>
+      <GetTicket event={event} />
       <View className="border py-3 px-3">
         <View className="border rounded-xl flex flex-row overflow-hidden">
           <TouchableOpacity
@@ -199,6 +204,8 @@ export default function EventDetail() {
         status={selectedRsvpStatus}
         onClose={handleSheetClose}
       />
+      
+
     </SafeAreaView>
   );
 }

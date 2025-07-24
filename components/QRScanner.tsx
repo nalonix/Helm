@@ -1,7 +1,7 @@
 // src/components/QRScanner.tsx
 import { BarcodeScanningResult, CameraView, useCameraPermissions } from 'expo-camera';
 import React, { useState } from 'react';
-import { Alert, Button, Text, View } from 'react-native';
+import { Button, StyleSheet, Text, View } from 'react-native'; // Import StyleSheet
 
 export default function QRScanner() {
   const [permission, requestPermission] = useCameraPermissions();
@@ -13,11 +13,11 @@ export default function QRScanner() {
     console.log(`Type: ${type}`);
     console.log(`Data: ${data}`); // The QR code content
 
-    Alert.alert(
-      'QR Code Scanned!',
-      `Data: ${data}`,
-      [{ text: 'OK', onPress: () => setScanned(false) }]
-    );
+    // Alert.alert(
+    //   'QR Code Scanned!',
+    //   `Data: ${data}`,
+    //   [{ text: 'OK', onPress: () => setScanned(false) }]
+    // );
   };
 
   if (!permission) {
@@ -40,24 +40,30 @@ export default function QRScanner() {
   }
 
   return (
-    <View className='flex-1 flex-col justify-center items-center bg-black'>
+    <View className='aspect-square flex flex-col justify-center items-center overflow-hidden rounded-lg bg-black'>
       <CameraView
         onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
+        facing='back'
         barcodeScannerSettings={{
           barcodeTypes: ['qr'],
         }}
-        // NativeWind equivalent of StyleSheet.absoluteFillObject
-        className='absolute inset-0'
+        style={styles.cameraPreview}
       />
-      {scanned && (
-        // Position the "Scan Again" button over the camera view
-        <View className='absolute bottom-10'>
-          <Button title={'Tap to Scan Again'} onPress={() => setScanned(false)} />
+      {scanned ? (
+        <View className='absolute top-1/2 z-10'>
+          <Button title={'Tap To Scan New'} onPress={() => setScanned(false)} />
         </View>
+      ) : (
+        <Text className='absolute top-1/2 text-lg text-white bg-black/50 p-2.5 rounded-md z-10'>
+            Scan A Ticket
+        </Text>
       )}
-      <Text className='mt-20 text-lg text-white bg-black/50 p-2.5 rounded-md'>
-        Scan a QR Code
-      </Text>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  cameraPreview: {
+    ...StyleSheet.absoluteFillObject
+  },
+});

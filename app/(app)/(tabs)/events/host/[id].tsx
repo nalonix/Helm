@@ -28,7 +28,7 @@ export default function HostEventDetail() {
           <Text>Manage</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity onPress={() => router.push(`/(app)/(tabs)/events`)}>
           <Text>Close</Text>
         </TouchableOpacity>
 

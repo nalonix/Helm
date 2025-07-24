@@ -24,6 +24,8 @@ export type UserRsvp = {
   // Add other RSVP fields if you fetch them (e.g., created_at, updated_at)
 };
 
+export type EventDetails = Event & { rsvp: UserRsvp | null };
+
 // Async function to fetch a single event by its ID and the current user's RSVP
 // The return type is an inline intersection type: Event & { rsvp: UserRsvp | null }
 const fetchEventAndUserRsvp = async (
@@ -82,6 +84,7 @@ const fetchEventAndUserRsvp = async (
   };
 };
 
+
 /**
  * Custom hook to fetch details for a specific event, including the current user's RSVP status.
  * The returned data will be an Event object with an additional 'rsvp' property.
@@ -90,7 +93,7 @@ const fetchEventAndUserRsvp = async (
  * @returns An object containing `data` (Event with rsvp, or null), `isLoading`, `isError`, and `error`.
  */
 export const useEventDetails = (eventId: string | undefined) => {
-  return useQuery<(Event & { rsvp: UserRsvp | null }) | null, Error>({ // Use the inline intersection type here
+  return useQuery<(EventDetails) | null, Error>({ // Use the inline intersection type here
     queryKey: ['eventDetails', eventId],
     queryFn: () => fetchEventAndUserRsvp(eventId as string),
     enabled: !!eventId,
