@@ -1,48 +1,22 @@
 import { EventDetails } from "@/hooks/useEventDetails";
 import { useAuth } from "@/providers/AuthProvider";
-import BottomSheet, {
-    BottomSheetBackdrop,
-    BottomSheetView,
-} from "@gorhom/bottom-sheet";
-import { useMemo, useRef } from "react";
-import { SafeAreaView, Text, TouchableOpacity, View } from "react-native";
+import { Text, View } from "react-native";
 
-export default function GetTicket({ event }: { event: EventDetails }) {
+export default function GetTicket({ event, onClose }: { event: EventDetails, onClose: () => void }) {
     const { user } = useAuth();
-
-
-    const bottomSheetRef = useRef<BottomSheet>(null);
-  const snapPoints = useMemo(() => ["60%"], []);
-  const openSheet = () => bottomSheetRef.current?.expand();
   
     
     return (
-        <SafeAreaView className="flex-1">
-            <View>
-                <TouchableOpacity onPress={openSheet}>
-                    <Text>Get Ticket</Text>
-                </TouchableOpacity>
-            </View>
-            <BottomSheet
-            ref={bottomSheetRef}
-            index={-1}
-            enablePanDownToClose={true}
-            snapPoints={snapPoints}
-            backdropComponent={(props) => (
-            <BottomSheetBackdrop
-                {...props}
-                appearsOnIndex={0}
-                disappearsOnIndex={-1}
-                pressBehavior="close"
-            />
-            )}
-        >
-            <BottomSheetView className="h-full px-5 py-4">
-                <Text>Get Ticket</Text>
-            </BottomSheetView>
-        </BottomSheet>
-
-        </SafeAreaView>
+        <View className="flex-1">
+            <Text>Get Ticket</Text>
+            <Text>{event.title}</Text>
+            <Text>{event.id}</Text>
+            <Text>{user?.id}</Text>
+            <Text>{event.host}</Text>
+            <Text>{event.date}</Text>
+            <Text>{event.start_time}</Text>
+            <Text>{event.end_time}</Text>
+        </View>
     );
 }
   

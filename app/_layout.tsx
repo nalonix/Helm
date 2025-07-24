@@ -12,6 +12,7 @@ import { AuthProvider } from '@/providers/AuthProvider';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
+import { BottomSheetProvider } from '@/providers/BottomSheetProvider';
 import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
@@ -44,8 +45,10 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
             <GestureHandlerRootView style={styles.container}>
+            <BottomSheetProvider>
               <Slot />
               <StatusBar style="auto" />
+              </BottomSheetProvider>
             </GestureHandlerRootView>
           </AuthProvider>
         </QueryClientProvider>
