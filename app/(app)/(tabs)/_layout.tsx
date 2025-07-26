@@ -36,6 +36,7 @@ export default function TabsLayout() {
         headerRight: () => <SignOutButton />,
         headerStyle: {
           backgroundColor: '#f8f8f8'
+
         },
         headerShadowVisible: false,
       }} />

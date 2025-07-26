@@ -21,6 +21,8 @@ export interface Event {
 export type UserRsvp = {
   response: 'Going' | 'May Be' | 'Not Going';
   message?: string | null;
+  ticket_id?: string | null;
+  checked_in?: boolean | null;
   // Add other RSVP fields if you fetch them (e.g., created_at, updated_at)
 };
 
@@ -65,7 +67,7 @@ const fetchEventAndUserRsvp = async (
   if (currentUserId) {
     const { data: rsvpData, error: rsvpError } = await supabase
       .from('rsvp')
-      .select('response, message') // Select only the relevant RSVP fields
+      .select('response, message, ticket_id, checked_in') // Select only the relevant RSVP fields
       .eq('user_id', currentUserId)
       .eq('event_id', eventId)
       .single();

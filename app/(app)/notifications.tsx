@@ -162,6 +162,7 @@ export default function NotificationsScreen() {
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <TouchableOpacity
+              key={item.id}
               className={`p-4 rounded-lg mb-3 shadow-sm ${
                 item.read ? 'bg-gray-200' : 'bg-white border-l-4 border-blue-500'
               }`}

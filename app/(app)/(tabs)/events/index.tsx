@@ -35,7 +35,7 @@ export default function EventsIndex() {
       ) : (
         <FlatList
           data={upcomingEvents}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.id} // This is correct, but applies to the element returned by renderItem
           ListEmptyComponent={
             <Text className="text-gray-500 text-center mt-10 text-base">
               No upcoming events found. Be the first to create one!
@@ -45,6 +45,7 @@ export default function EventsIndex() {
             if (item.hosting) {
               return (
                 <TouchableOpacity
+                  key={item.id}
                   onPress={() => router.push(`/(app)/(tabs)/events/host/${item.id}`)}
                   className="border border-zinc-300 bg-white p-4 rounded-lg mb-2 shadow"
                 >
@@ -58,8 +59,9 @@ export default function EventsIndex() {
             } else {
               return (
                 <TouchableOpacity
+                  key={item.id}
                   onPress={() => router.push(`/(app)/(tabs)/events/${item.id}`)}
-                  className="border border-zinc-300  bg-white p-4 rounded-lg mb-2 shadow"
+                  className="border border-zinc-300  bg-white p-4 rounded-lg mb-2 shadow"
                 >
                   <Text className="text-lg font-semibold">{item.title}</Text>
                   <Text className="text-sm text-gray-600">{item.date}</Text>

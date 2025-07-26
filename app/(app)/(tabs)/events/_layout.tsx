@@ -33,8 +33,8 @@ export default function EventsLayout() {
         headerShadowVisible: false,
         headerBackVisible: false,
       }}/>
-      <Stack.Screen name="[id]" options={{ headerShown: false }} />
-      <Stack.Screen name="host" options={{ headerShown: false }} />
+      <Stack.Screen name="[id]" options={{ headerShown: false, animation: "fade_from_bottom" }} />
+      <Stack.Screen name="host" options={{ headerShown: false, animation: "fade_from_bottom" }} />
     </Stack>
   );
 }

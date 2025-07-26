@@ -183,7 +183,7 @@ export default function UserSearchScreen() {
           data={searchResults}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <UserCard user={item} debouncedUsername={debouncedUsername} />
+            <UserCard key={item.id} user={item} debouncedUsername={debouncedUsername} />
           )}
           ListEmptyComponent={
             <Text className="text-gray-500 text-center mt-4">

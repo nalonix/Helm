@@ -1,7 +1,7 @@
 import '../global.css';
 
 
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+// import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Slot } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -41,18 +41,18 @@ export default function RootLayout() {
 
   // TODO: Check with gpt if wraping with safe area view is good
   return (
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      // <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
             <GestureHandlerRootView style={styles.container}>
             <BottomSheetProvider>
               <Slot />
-              <StatusBar style="auto" />
+              <StatusBar style="inverted" />
               </BottomSheetProvider>
             </GestureHandlerRootView>
           </AuthProvider>
         </QueryClientProvider>
-      </ThemeProvider>
+      // </ThemeProvider>
   );
 
 }

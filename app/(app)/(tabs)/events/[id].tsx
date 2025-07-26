@@ -1,5 +1,4 @@
 // src/app/events/[id].tsx (EventDetail component)
-import GetTicket from "@/components/GetTicket"; // Keep this import
 import RSVPBottomSheetContent from "@/components/RSVPBottomSheetContent"; // Import the content component
 import { useBottomSheet } from "@/hooks/useBottomSheet"; // Import the new hook
 import { EventDetails, useEventDetails } from "@/hooks/useEventDetails";
@@ -8,6 +7,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import { ActivityIndicator, Image, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import GetTicket from "./_components/GetTicket";
 
 // Define the possible RSVP statuses (remains the same)
 type RsvpStatus = "Going" | "May Be" | "Not Going" | null;
@@ -138,18 +138,21 @@ export default function EventDetail() {
           <TouchableOpacity
             className={`flex-1 items-center justify-center p-3 ${currentUserRsvpStatus === "Going" ? "bg-green-200" : "bg-green-50"}`}
             onPress={() => handleRsvpPress("Going")}
+            disabled={currentUserRsvpStatus === "Going"}
           >
             <Text className="text-lg font-semibold">Going</Text>
           </TouchableOpacity>
           <TouchableOpacity
             className={`flex-1 items-center justify-center p-3 border-x ${currentUserRsvpStatus === "May Be" ? "bg-yellow-200" : "bg-zinc-100"}`}
             onPress={() => handleRsvpPress("May Be")}
+            disabled={currentUserRsvpStatus === "May Be"}
           >
             <Text className="text-lg font-semibold">May Be</Text>
           </TouchableOpacity>
           <TouchableOpacity
             className={`flex-1 items-center justify-center p-3 ${currentUserRsvpStatus === "Not Going" ? "bg-red-200" : "bg-red-50"}`}
             onPress={() => handleRsvpPress("Not Going")}
+            disabled={currentUserRsvpStatus === "Not Going"}
           >
             <Text className="text-lg font-semibold">Not Going</Text>
           </TouchableOpacity>
