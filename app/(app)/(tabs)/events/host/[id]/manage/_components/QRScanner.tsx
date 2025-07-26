@@ -1,10 +1,11 @@
 // src/components/QRScanner.tsx
-import { useEventDetails } from '@/hooks/useEventDetails'; // Import EventDetails type
+// REMOVED: import { useEventDetails } from '@/hooks/useEventDetails'; // No longer needed
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/providers/AuthProvider';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { BarcodeScanningResult, CameraView, useCameraPermissions } from 'expo-camera';
-import { useLocalSearchParams } from 'expo-router';
+// REMOVED: useLocalSearchParams // No longer needed for eventId
+import { useHostEvent } from '@/providers/HostEventProvider'; // Import the new hook
 import React, { useState } from 'react';
 import { ActivityIndicator, Button, StyleSheet, Text, View } from 'react-native';
 
@@ -12,122 +13,62 @@ import { ActivityIndicator, Button, StyleSheet, Text, View } from 'react-native'
 interface CheckInResult {
   status: 'success' | 'warning' | 'error';
   message: string;
-  checkedInUsername?: string | null;
+  username?: string | null; // Changed from checkedInUsername to username for consistency with RPC
+  event_title?: string | null; // Added for consistency with RPC response
 }
 
 export default function QRScanner() {
-  const { id: eventId } = useLocalSearchParams(); // Current event ID from the URL
+  // Get event data and loading/error states from the HostEventProvider context
+  const { hostEventData, isLoading, isError, error } = useHostEvent();
+  const event = hostEventData?.event; // Extract the event object
+  const eventId = event?.id; // Get eventId directly from the context's event object
+
   const { user: hostUser } = useAuth(); // Currently authenticated host user
   const hostUserId = hostUser?.id;
 
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
-  const [scanResult, setScanResult] = useState<CheckInResult | null>(null); // To display check-in result
+  const [scanResult, setScanResult] = useState<CheckInResult | null>(null);
 
   const queryClient = useQueryClient();
 
-  // Fetch event details to check ownership and date
-  const { data: event, isLoading: isLoadingEvent, isError: isEventError } = useEventDetails(eventId as string);
-
-  // Mutation to handle the client-side check-in process
+  // Mutation to call the Supabase RPC function (still the secure backend logic)
   const { mutate: processCheckIn, isPending: isCheckingIn } = useMutation<CheckInResult, Error, { scannedTicketId: string }>({
     mutationFn: async ({ scannedTicketId }) => {
+      // These checks are now minimal, focusing on client-side prerequisites
       if (!hostUserId) {
-        return { status: 'error', message: 'Host user not authenticated.' };
+        throw new Error("Host user not authenticated. Please log in.");
       }
-      if (!event) {
-        return { status: 'error', message: 'Event details not loaded.' };
-      }
-      if (event.host !== hostUserId) {
-        return { status: 'error', message: 'Unauthorized: You are not the host of this event.' };
+      if (!eventId) { // Ensure eventId is available from context
+        throw new Error("Event ID not available from context. Cannot proceed.");
       }
 
-      const eventDate = new Date(event.date);
-      const today = new Date();
-      eventDate.setHours(0, 0, 0, 0);
-      today.setHours(0, 0, 0, 0);
-      if (eventDate.getTime() !== today.getTime()) {
-        return { status: 'error', message: `Not event day: Tickets can only be scanned on ${event.date}.` };
+      // Call the RPC function, relying on it for all validation and updates
+      const { data, error: rpcError } = await supabase.rpc('check_in_user', {
+        p_ticket_id: scannedTicketId,
+        p_host_user_id: hostUserId,
+        p_event_id: eventId, // Pass eventId to RPC for server-side verification
+      });
+
+      if (rpcError) {
+        console.error("RPC Error:", rpcError);
+        throw new Error(rpcError.message || "Failed to check in user via backend.");
       }
 
-      // --- Core Client-Side Check-in Logic ---
-      try {
-        // 1. Fetch the RSVP record using the scanned ticket_id
-        const { data: rsvpRecord, error: rsvpFetchError } = await supabase
-          .from('rsvp')
-          .select('id, user_id, event_id, response, checked_in') // Select necessary fields
-          .eq('ticket_id', scannedTicketId)
-          .single();
-
-        if (rsvpFetchError) {
-          if (rsvpFetchError.code === 'PGRST116') { // No rows found
-            return { status: 'error', message: 'Invalid ticket ID.' };
-          }
-          console.error("Error fetching RSVP record:", rsvpFetchError);
-          throw new Error(rsvpFetchError.message || 'Failed to verify ticket.');
-        }
-
-        if (!rsvpRecord) {
-            return { status: 'error', message: 'Invalid ticket ID.' }; // Should be caught by PGRST116, but for safety
-        }
-
-        // 2. Verify it's the correct event for this ticket
-        if (rsvpRecord.event_id !== event.id) {
-          return { status: 'error', message: 'Ticket is for a different event.' };
-        }
-
-        // 3. Check RSVP status (only 'Going' or 'May Be' can check in)
-        if (rsvpRecord.response !== 'Going' && rsvpRecord.response !== 'May Be') {
-          // Fetch username for better feedback
-          const { data: profile, error: profileError } = await supabase.from('profiles').select('username').eq('id', rsvpRecord.user_id).single();
-          const username = profile?.username || 'User';
-          return { status: 'warning', message: `${username} RSVP'd as "${rsvpRecord.response}". Cannot check in.`, checkedInUsername: username };
-        }
-
-        // 4. Check if already checked in
-        if (rsvpRecord.checked_in) {
-          const { data: profile, error: profileError } = await supabase.from('profiles').select('username').eq('id', rsvpRecord.user_id).single();
-          const username = profile?.username || 'User';
-          return { status: 'warning', message: `${username} already checked in.`, checkedInUsername: username };
-        }
-
-        // 5. Perform the check-in update
-        const { error: updateError } = await supabase
-          .from('rsvp')
-          .update({
-            checked_in: true,
-            checked_in_at: new Date().toISOString(),
-            checked_in_by: hostUserId,
-          })
-          .eq('id', rsvpRecord.id); // Update using the RSVP record's primary key
-
-        if (updateError) {
-          console.error("Error updating RSVP for check-in:", updateError);
-          throw new Error(updateError.message || 'Failed to update check-in status.');
-        }
-
-        // Fetch username for success message
-        const { data: profile, error: profileError } = await supabase.from('profiles').select('username').eq('id', rsvpRecord.user_id).single();
-        const username = profile?.username || 'User';
-
-        return { status: 'success', message: `${username} checked in successfully!`, checkedInUsername: username };
-
-      } catch (err: any) {
-        console.error("Check-in process error:", err);
-        return { status: 'error', message: err.message || 'An unexpected error occurred during check-in.' };
-      }
+      // Supabase RPC returns an array of objects for TABLE functions, even if single row
+      return data[0] as CheckInResult;
     },
     onSuccess: (result) => {
       setScanResult(result);
-      // Invalidate the eventDetails query to update the host's view if needed
-      queryClient.invalidateQueries({ queryKey: ['eventDetails', eventId] });
-      // Invalidate a query that lists all RSVPs for this event (if you have one)
-      queryClient.invalidateQueries({ queryKey: ['eventRsvps', eventId] });
+      // Invalidate the 'hostEventData' query to trigger a refetch in the provider,
+      // which will then update all consuming components (like RSVP/Guest lists).
+      queryClient.invalidateQueries({ queryKey: ['hostEventData', eventId] });
     },
     onError: (err) => {
       setScanResult({
         status: 'error',
-        message: err.message || 'An unexpected error occurred.',
+        message: err.message || 'An unexpected error occurred during check-in.',
+        username: null, event_title: null,
       });
     },
   });
@@ -137,18 +78,52 @@ export default function QRScanner() {
     setScanResult(null); // Clear previous result
     console.log(`Scanned Data: ${data}`);
 
-    // Trigger the mutation with the scanned data
+    // Basic client-side checks before calling backend
+    if (!hostUserId) {
+      setScanResult({ status: 'error', message: 'You must be logged in to scan tickets.' });
+      setScanned(false); // Allow re-scan immediately if auth issue
+      return;
+    }
+    if (!event) { // Check if event data is available from context
+      setScanResult({ status: 'error', message: 'Event data not loaded. Cannot proceed.' });
+      setScanned(false); // Allow re-scan immediately if data issue
+      return;
+    }
+
+    // Trigger the mutation to call the backend check-in function
     processCheckIn({ scannedTicketId: data });
   };
 
-  // --- Permission Handling UI ---
-  if (!permission || isLoadingEvent) {
+  // --- Loading/Error UI from Context ---
+  // This component will show its own loading/error if hostEventData isn't ready
+  // or if there's an error from the provider.
+  if (isLoading) {
     return (
       <View className='flex-1 flex-col justify-center items-center bg-black'>
         <ActivityIndicator size="large" color="white" />
-        <Text className='text-white mt-4'>
-          {isLoadingEvent ? 'Loading event details...' : 'Requesting camera permission...'}
+        <Text className='text-white mt-4'>Loading event data...</Text>
+      </View>
+    );
+  }
+
+  if (isError || !event) { // If provider reported an error or event is null
+    return (
+      <View className='flex-1 flex-col justify-center items-center bg-red-800 p-4'>
+        <Text className='text-white text-center text-lg'>
+          {isError ? `Error: ${error?.message || 'Unknown error.'}` : 'Event data not found.'}
         </Text>
+        <Text className='text-white text-center text-sm mt-2'>
+          Please ensure you are on a valid event management page.
+        </Text>
+      </View>
+    );
+  }
+
+  // --- Camera Permission Handling UI ---
+  if (!permission) {
+    return (
+      <View className='flex-1 flex-col justify-center items-center bg-black'>
+        <Text className='text-white'>Requesting for camera permission...</Text>
       </View>
     );
   }
@@ -160,19 +135,6 @@ export default function QRScanner() {
           We need your permission to show the camera.
         </Text>
         <Button onPress={requestPermission} title="Grant Permission" />
-      </View>
-    );
-  }
-
-  if (isEventError || !event) {
-    return (
-      <View className='flex-1 flex-col justify-center items-center bg-red-800 p-4'>
-        <Text className='text-white text-center text-lg'>
-          Failed to load event details or event not found.
-        </Text>
-        <Text className='text-white text-center text-sm mt-2'>
-          Ensure you are on a valid event host page.
-        </Text>
       </View>
     );
   }
@@ -189,6 +151,11 @@ export default function QRScanner() {
         style={styles.cameraPreview}
       />
 
+      {/* Display event title from context */}
+      <Text className='absolute top-5 text-xl font-bold text-white z-10'>
+        {event.title} Check-in
+      </Text>
+
       {/* Overlay for scan status or instructions */}
       {isCheckingIn ? (
         <View className='absolute top-1/2 -mt-10 z-10 p-4 bg-blue-700/80 rounded-lg items-center'>
@@ -202,8 +169,11 @@ export default function QRScanner() {
         }`}>
           <Text className='text-white text-xl font-bold mb-2'>{scanResult.status.toUpperCase()}</Text>
           <Text className='text-white text-base text-center'>{scanResult.message}</Text>
-          {scanResult.checkedInUsername && (
-            <Text className='text-white text-sm mt-2'>User: {scanResult.checkedInUsername}</Text>
+          {scanResult.username && (
+            <Text className='text-white text-sm mt-2'>User: {scanResult.username}</Text>
+          )}
+          {scanResult.event_title && (
+            <Text className='text-white text-xs mt-1'>Event: {scanResult.event_title}</Text>
           )}
           <Button title={'Scan New Ticket'} onPress={() => setScanned(false)} color="white" />
         </View>
@@ -217,9 +187,9 @@ export default function QRScanner() {
       {scanned && !isCheckingIn && scanResult && (
         <View className='absolute bottom-5 z-10'>
           <Button title={'Tap to Scan New'} onPress={() => {
-            setScanned(false)
-            setScanResult(null)
-            }} />
+            setScanned(false);
+            setScanResult(null); // Clear result on "Scan New"
+          }} />
         </View>
       )}
     </View>

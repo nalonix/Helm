@@ -1,10 +1,14 @@
 // src/hooks/useHostEventData.ts
 import { supabase } from '@/lib/supabase'; // Adjust this import path as needed
 import { useQuery } from '@tanstack/react-query';
-import { Event } from './useEventDetails'; // Import the base Event interface (it remains pure)
+
+// Re-import the base Event interface from useEventDetails if it's there,
+// or define it here if useEventDetails is being phased out for host context.
+// Assuming it's still in useEventDetails.ts
+import { Event } from './useEventDetails';
 
 // Define the structure for an individual RSVP record from the host's perspective
-// This includes all columns from the rsvp table, plus potentially joined user data
+// This includes all columns from the rsvp table, plus joined user profile data.
 export type HostRsvp = {
   id: string; // Assuming rsvp table has its own primary key 'id'
   user_id: string;
@@ -14,6 +18,7 @@ export type HostRsvp = {
   ticket_id: string;
   checked_in: boolean;
   checked_in_at?: string | null;
+  checked_in_by?: string | null;
   created_at: string;
   updated_at?: string | null;
   profiles?: { // Assuming a foreign key relationship to public.profiles
@@ -59,13 +64,17 @@ const fetchHostEventAndRsvps = async (eventId: string): Promise<HostEventData | 
     .from('rsvp')
     .select(`
       *,
-      profiles (
+      profiles!rsvp_user_id_fkey (
         username,
         full_name,
         avatar_url
+      ),
+      checked_in_by_profile:profiles!rsvp_checked_in_by_fkey (
+        username,
+        full_name
       )
-    `) // Select all rsvp columns and specific profile columns
-    .eq('event_id', eventId); // Filter by the current event ID
+    `)
+    .eq('event_id', eventId);
 
   if (rsvpsError) {
     console.error('Error fetching RSVPs for event:', rsvpsError);
@@ -94,6 +103,7 @@ export const useHostEventData = (eventId: string | undefined) => {
     queryFn: () => fetchHostEventAndRsvps(eventId as string),
     enabled: !!eventId, // Only enable the query if eventId is provided
     staleTime: 1000 * 60 * 2, // Data considered fresh for 2 minutes (can be adjusted)
+    // cacheTime: 1000 * 60 * 5, // Data stays in cache for 5 minutes
     placeholderData: (previousData) => previousData, // Keep previous data during refetch
   });
 };

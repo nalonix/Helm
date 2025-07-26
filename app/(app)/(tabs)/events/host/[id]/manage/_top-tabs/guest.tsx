@@ -1,3 +1,4 @@
+import { useHostEvent } from '@/providers/HostEventProvider';
 import { useLocalSearchParams } from 'expo-router';
 import React from 'react';
 import { Text, View } from 'react-native';
@@ -6,9 +7,11 @@ import QRScanner from "../_components/QRScanner";
 
 export default function Guest() {
   const {id} = useLocalSearchParams();
+  const { hostEventData } = useHostEvent()
   return (
     <SafeAreaView className='flex-1'>
       <Text>Guest</Text>
+      <Text>{hostEventData?.event.description}</Text>
       <View className='p-2'>
         <QRScanner />
       </View>

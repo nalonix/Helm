@@ -34,7 +34,7 @@ export default function EventsLayout() {
         headerBackVisible: false,
       }}/>
       <Stack.Screen name="[id]" options={{ headerShown: false, animation: "fade_from_bottom" }} />
-      <Stack.Screen name="host" options={{ headerShown: false, animation: "fade_from_bottom" }} />
+      <Stack.Screen name="host/[id]" options={{ headerShown: false, animation: "fade_from_bottom" }} />
     </Stack>
   );
 }

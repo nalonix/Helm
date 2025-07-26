@@ -3,6 +3,7 @@ import { useMemo, useRef } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 
 import SendInvite from "@/components/SendInvite";
+import { useHostEvent } from "@/providers/HostEventProvider";
 import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetView,
@@ -11,6 +12,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HostEventDetail() {
   const { id } = useLocalSearchParams();
+  const { hostEventData } = useHostEvent();
+
+  
 
   // Ref for controlling the bottom sheet
   const bottomSheetRef = useRef<BottomSheet>(null);
@@ -21,9 +25,10 @@ export default function HostEventDetail() {
     <SafeAreaView className="flex-1">
       <View className="flex-1 px-4">
         <Text>HostEventDetail {id}</Text>
+        <Text>{hostEventData?.event.title}</Text>
 
         <TouchableOpacity
-          onPress={() => router.push(`/events/host/${id}/manage/general`)}
+          onPress={() => router.push(`/(app)/(tabs)/events/host/${id}/manage`)}
         >
           <Text>Manage</Text>
         </TouchableOpacity>
@@ -40,6 +45,8 @@ export default function HostEventDetail() {
         </TouchableOpacity>
       </View>
 
+
+      {/* TODO: UPDATE IMPLIMENTATION */}
       {/* BottomSheet outside of View for full-screen backdrop */}
       <BottomSheet
         ref={bottomSheetRef}
