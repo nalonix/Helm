@@ -83,7 +83,8 @@ const fetchUsersAndInvitationStatus = async (
     .from("profiles")
     .select("id, username, full_name, avatar_url")
     .ilike("username", `%${username}%`)
-    .neq("id", user.id);
+    .neq("id", user.id)
+    .eq("public", true);
 
   if (profilesError) {
     console.error("Supabase profile search error:", profilesError);

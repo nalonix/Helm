@@ -1,4 +1,5 @@
 // src/components/TicketBottomSheetContent.tsx
+import { TICKET_PREFIX } from '@/constants';
 import { EventDetails } from '@/hooks/useEventDetails';
 import { useAuth } from '@/providers/AuthProvider';
 import React from 'react';
@@ -44,7 +45,7 @@ export default function TicketBottomSheetContent({ event, onClose }: TicketBotto
         // Otherwise, show the QR code
         <View className='p-4 border border-gray-300 rounded-lg shadow-md bg-white'>
           <QRCode
-            value={ticketId}
+            value={`${TICKET_PREFIX}${ticketId}`}
             size={200}
             color="black"
             backgroundColor="white"

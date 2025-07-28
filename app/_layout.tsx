@@ -39,6 +39,10 @@ export default function RootLayout() {
   }
 
 
+
+
+
+
   // TODO: Check with gpt if wraping with safe area view is good
   return (
       // <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>

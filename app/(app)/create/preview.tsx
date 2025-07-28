@@ -47,7 +47,8 @@ export default function EventPreviewScreen() {
     description: (params.description as string) || '',
     date: params.date as string,
     time: params.time as string,
-    poster: () => {
+    poster: params.poster as string,
+    posterPreview: () => {
       const defaultPoster = require('@/assets/images/default-poster.jpg');
       let posterParam = params.poster as string
       if (params.poster && (posterParam.startsWith('http') || posterParam.startsWith('file'))){
@@ -56,6 +57,11 @@ export default function EventPreviewScreen() {
         return defaultPoster
       }
     },
+    locationName: params.locationName,
+    country: params.country,
+    city: params.city,
+    longitude: params.longitude,
+    latitude: params.latitude
   };
 
 
@@ -85,7 +91,7 @@ export default function EventPreviewScreen() {
 
   return (
     <ImageBackground
-      source={eventData.poster() as ImageSourcePropType}
+      source={eventData.posterPreview() as ImageSourcePropType}
       className="flex-1 w-full h-full justify-end items-center"
       resizeMode="cover"
       blurRadius={30}
@@ -107,7 +113,7 @@ export default function EventPreviewScreen() {
               <View className="w-full mb-6 aspect-square border-2 border-white/60 rounded-lg overflow-hidden">
               {/* @ts-ignore */}
                 <Image
-                    source={eventData.poster() as ImageSourcePropType}
+                    source={eventData.posterPreview() as ImageSourcePropType}
                     className="w-full h-full"
                   />
               </View>
@@ -121,6 +127,10 @@ export default function EventPreviewScreen() {
 
               <Text className="text-helm-beige text-xl font-semibold mb-2">Title:</Text>
               <Text className="text-white text-lg mb-4">{eventData.title}</Text>
+
+              <Text className="text-helm-beige text-xl font-semibold mb-2">Location:</Text>
+              <Text className="text-white text-lg mb-4">{eventData.locationName}</Text>
+              <Text className="text-white text-lg mb-4">{eventData.country}</Text>
 
               {eventData.description && (
                 <>

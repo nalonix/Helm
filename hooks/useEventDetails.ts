@@ -14,7 +14,13 @@ export interface Event {
   host: string; // User ID of the host
   created_at: string;
   updated_at?: string | null;
-  // Add any other columns from your 'events' table
+  address?: {
+    name?: string | null;
+    city?: string | null;
+    country?: string | null;
+    latitude: number | null;
+    longitude: number | null;
+  } | null;
 }
 
 // Define the UserRsvp type (remains the same)

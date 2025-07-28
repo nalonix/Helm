@@ -1,24 +1,3 @@
-// import { router } from 'expo-router'
-// import React from 'react'
-// import { Text, TouchableOpacity, View } from 'react-native'
-
-// export default function create() {
-//   return (
-//     <View>
-//       <Text>Create new event</Text>
-//       <TouchableOpacity
-//           onPress={() => router.push('/(app)/create/preview')}
-//         >
-//           <Text>Preview</Text>
-//       </TouchableOpacity>
-//     </View>
-//   )
-// }
-
-
-
-
-
 // app/(app)/events/create.tsx
 
 
@@ -35,38 +14,79 @@ import { Feather } from "@expo/vector-icons";
 import { Button } from '@/components/Button';
 import { FormInput } from '@/components/FormInput';
 // import { createEvent } from '@/lib/events'; // No longer called directly here
+import LocationInput from '@/components/LocationInput';
+import { useBottomSheet } from '@/hooks/useBottomSheet';
 import { useAuth } from '@/providers/AuthProvider';
 import { CreateEventFormData, createEventSchema } from '@/schemas/eventSchema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { ScrollView } from 'react-native-gesture-handler';
 
+
 export default function CreateEventScreen() {
   const [loading, setLoading] = React.useState(false); // Loading state for the preview button
   const router = useRouter();
   const { user } = useAuth(); // Get the authenticated user from your AuthContext
-
+  
   const defaultImage = require('@/assets/images/default-poster.jpg');
   const [selectedImage, setSelectedImage] = React.useState<string | null>(null);
-
-    const [date, setDate] = React.useState<Date | null>(null);
+  
+  const [date, setDate] = React.useState<Date | null>(null);
   const [showDatePicker, setShowDatePicker] = React.useState(false);
   const [time, setTime] = React.useState<Date | null>(null);
   const [showTimePicker, setShowTimePicker] = React.useState(false);
+  const [selectedLocation, setSelectedLocation] = React.useState<{
+    name: string;
+    City: string;
+    Country: string;
+    latitude: number;
+    longitude: number;
+    type: string;
+  } | null>(null);
   // Date picker handler
   // const onDateChange = (event: any, selected?: Date) => {
   //   setShowDatePicker(false);
   //   if (selected) setDate(selected);
   // };
-
+  
   // // Time picker handler
   // const onTimeChange = (event: any, selected?: Date) => {
   //   setShowTimePicker(false);
   //   if (selected) setTime(selected);
   // };
+  
+  const { openSheet, closeSheet } = useBottomSheet();
+
+  const handleLocationInput = () => {
+    openSheet(
+      LocationInput, 
+      { 
+        name: 'location', 
+        onClose: closeSheet,
+        onLocationSelect: (place: {
+          name: string;
+          City: string;
+          Country: string;
+          latitude: number;
+          longitude: number;
+          type: string;
+        }) => {
+          setSelectedLocation(place);
+          setValue('locationName', place.name);
+          setValue('city', place.City);
+          setValue('country', place.Country);
+          setValue('latitude', place.latitude);
+          setValue('longitude', place.longitude);
+
+        }
+      }, 
+      'Select Location' 
+    );
+  };
+
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ["images"],
       allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
@@ -92,6 +112,11 @@ export default function CreateEventScreen() {
       description: '',
       date: '',
       time: '',
+      locationName: '',
+      city: '',
+      country: '',
+      latitude: undefined,
+      longitude: undefined,
     },
   });
 
@@ -107,7 +132,9 @@ export default function CreateEventScreen() {
       return;
     }
 
-    setLoading(true); 
+    setLoading(true);
+    
+    console.log("👉👉: ",data)
 
     router.push({
       pathname: '/(app)/create/preview',
@@ -118,7 +145,11 @@ export default function CreateEventScreen() {
         description: data.description || '', // Ensure optional fields are handled
         date: data.date,
         time: data.time,
-        // location: data.location,
+        locationName: data.locationName,
+        city: data.city || '',
+        country: data.country || '',
+        latitude: data.latitude?.toString() || '',
+        longitude: data.longitude?.toString() || '',
         // Pass any other fields from CreateEventFormData
       },
     });
@@ -201,6 +232,18 @@ export default function CreateEventScreen() {
                 />
 
             </View>
+
+            {/* Location Input */}
+        <TouchableOpacity 
+          onPress={handleLocationInput}
+          className="w-full py-3 px-2 bg-black/30 rounded-xl mt-2 border border-gray-400/30 flex-row items-center justify-center"
+          activeOpacity={0.8}
+        >
+          <Feather name="map-pin" size={20} color="#a3a3a3" className="mr-2" />
+          <Text className="text-center text-white/60 font-semibold text-wrap">
+            {selectedLocation ? selectedLocation.name : 'Select Location'}
+          </Text>
+        </TouchableOpacity>
 
 
 {/* 

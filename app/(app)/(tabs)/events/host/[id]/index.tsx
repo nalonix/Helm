@@ -3,6 +3,7 @@ import { useMemo, useRef } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 
 import SendInvite from "@/components/SendInvite";
+import openMapApp from "@/lib/openMaps";
 import { useHostEvent } from "@/providers/HostEventProvider";
 import BottomSheet, {
   BottomSheetBackdrop,
@@ -21,6 +22,7 @@ export default function HostEventDetail() {
   const snapPoints = useMemo(() => ["60%"], []);
   const openSheet = () => bottomSheetRef.current?.expand();
 
+
   return (
     <SafeAreaView className="flex-1">
       <View className="flex-1 px-4">
@@ -33,9 +35,25 @@ export default function HostEventDetail() {
           <Text>Manage</Text>
         </TouchableOpacity>
 
+        <TouchableOpacity
+          onPress={() => router.push(`/(app)/(tabs)/events/host/${id}/edit`)}
+        >
+          <Text>Edit</Text>
+        </TouchableOpacity>
+
         <TouchableOpacity onPress={() => router.push(`/(app)/(tabs)/events`)}>
           <Text>Close</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => openMapApp(
+          hostEventData?.event.address?.latitude || 0, 
+          hostEventData?.event.address?.longitude || 0,
+          hostEventData?.event.address?.name || undefined
+        )}>
+          <Text>Open maps</Text>
+        </TouchableOpacity>
+
+        
 
         <TouchableOpacity
           onPress={openSheet}

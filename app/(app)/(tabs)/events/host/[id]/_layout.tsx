@@ -74,6 +74,7 @@ function HostEventAuthorizationGate() {
       {/* Since it's a child of HostEventProvider, useHostEvent will now work. */}
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="manage" options={{ headerShown: false }} />
+      <Stack.Screen name="edit/index" options={{ headerShown: false }} />
 
       {/* Define any other direct children screens of /host/[id] here if they are
           not part of the MaterialTopTabNavigator. For example, a full-screen modal. */}
