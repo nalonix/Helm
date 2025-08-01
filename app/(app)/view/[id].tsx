@@ -37,7 +37,6 @@ export default function EventDetail() {
     error,
   } = useEventDetails(id as string);
 
-
   const handleRsvpPress = (status: RsvpStatus) => {
     if (status) {
       openSheet(
@@ -115,10 +114,10 @@ export default function EventDetail() {
       resizeMode="cover"
       blurRadius={40}
     >
+      <ScrollView className="flex flex-grow w-full h-full px-5">
       {/* <SafeAreaView className="flex w-full pb-0"> */}
       {/* SafeAreaView takes full height */}
       {/* This ScrollView now wraps only the content that should scroll */}
-      <ScrollView className="flex flex-grow w-full h-full px-5">
         <Close />
         {/* ScrollView takes remaining height, apply horizontal padding here */}
         <View className="w-full">
@@ -129,12 +128,13 @@ export default function EventDetail() {
             {event.title}
           </Text>
           <Text className="text-zinc-100 text-xl">
-            Hosted By []
+            Hosted By {event.hostDetails?.full_name}
           </Text>
         </View>
         {/* RSVP Buttons - Moved back to their original position, outside the ScrollView */}
         {/* but still within the SafeAreaView's flex flow, so they are fixed relative to the screen */}
         {/* This block was originally here, before the description and other details */}
+        {!event.is_closed ? (
         <View className="shadow-sm rounded-xl flex flex-row overflow-hidden my-4">
           {/* Added mt-2 for spacing */}
           <TouchableOpacity
@@ -161,7 +161,12 @@ export default function EventDetail() {
             <Feather name="x-circle" size={24} color="black" />
             <Text className="text-lg font-semibold">Not Going</Text>
           </TouchableOpacity>
-        </View>
+        </View>):(
+          <View className="border border-red-800 mt-2 p-2 rounded-md bg-red-900/60">
+            <Text className="font-semibold text-center text-red-200">Registration Closed</Text>
+          </View>
+        )}
+
         {/* The rest of the content (description, time, location, get ticket) goes inside the ScrollView */}
         {event.description && (
           <View className="flex flex-col justify-center items-center w-full px-3 py-2 rounded-lg bg-zinc-800/40 mt-2">
@@ -183,8 +188,7 @@ export default function EventDetail() {
               {format(parseISO(event.date), "EEEE, MMMM d")}
             </Text>
             <Text className="text-zinc-100 text-lg">
-              {formatTimeToAmPm(event.start_time)} -{" "}
-              {formatTimeToAmPm(event.end_time)}
+              {formatTimeToAmPm(event.start_time)} - {formatTimeToAmPm(event.end_time)}
             </Text>
           </View>
         </View>
@@ -230,9 +234,9 @@ export default function EventDetail() {
         </Button>
         <View className="h-24" />
         {/* Add some space at the bottom of the scroll view */}
+      {/* </SafeAreaView> */}
       </ScrollView>
       {/* End ScrollView */}
-      {/* </SafeAreaView> */}
     </ImageBackground>
   );
 }

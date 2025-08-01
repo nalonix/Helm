@@ -1,9 +1,11 @@
 // src/hooks/useEventDetails.ts
 import { supabase } from '@/lib/supabase'; // Adjust this import path as needed
+import { Event as BaseEvent } from "@/types/eventTypes";
 import { useQuery } from '@tanstack/react-query';
 
 // Define the Event interface (UNCHANGED - NO 'rsvp' PROPERTY HERE)
-export interface Event {
+export interface Event extends BaseEvent {
+  // Additional properties specific to useEventDetails can be added here
   id: string; // Assuming UUID or string ID
   title: string;
   description?: string | null;
@@ -12,6 +14,8 @@ export interface Event {
   end_time?: string | null; // e.g., 'HH:MM:SS'
   poster?: string | null; // URL or path to storage
   host: string; // User ID of the host
+  is_closed: boolean;
+   guest_list_preference: string; 
   created_at: string;
   updated_at?: string | null;
   address?: {
@@ -34,11 +38,13 @@ export type UserRsvp = {
 
 export type EventDetails = Event & { rsvp: UserRsvp | null };
 
+
+
 // Async function to fetch a single event by its ID and the current user's RSVP
 // The return type is an inline intersection type: Event & { rsvp: UserRsvp | null }
 const fetchEventAndUserRsvp = async (
   eventId: string
-): Promise<(Event & { rsvp: UserRsvp | null }) | null> => {
+): Promise<(Event & { rsvp: UserRsvp | null; hostDetails: { full_name: string | null; username: string | null } | null }) | null> => {
   if (!eventId) {
     return null;
   }
@@ -63,13 +69,24 @@ const fetchEventAndUserRsvp = async (
     return null;
   }
 
-  // 2. Get the current authenticated user's ID
+  // 2. Fetch host details
+  const { data: hostData, error: hostError } = await supabase
+    .from('profiles')
+    .select('full_name, username')
+    .eq('id', eventData.host)
+    .single();
+
+  if (hostError) {
+    console.error('Error fetching host details:', hostError);
+  }
+
+  // 3. Get the current authenticated user's ID
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   const currentUserId = user?.id;
 
   let currentUserRsvp: UserRsvp | null = null;
 
-  // 3. If a user is logged in, fetch their RSVP for this event
+  // 4. If a user is logged in, fetch their RSVP for this event
   if (currentUserId) {
     const { data: rsvpData, error: rsvpError } = await supabase
       .from('rsvp')
@@ -85,23 +102,26 @@ const fetchEventAndUserRsvp = async (
     }
   }
 
-  // 4. Return the combined data as the desired inline intersection type
+  // 5. Return the combined data as the desired inline intersection type
   return {
     ...(eventData as Event), // Spread the event data (cast to Event)
     rsvp: currentUserRsvp,    // Add the rsvp property
+    hostDetails: hostData || null, // Add the host details
   };
 };
 
 
 /**
- * Custom hook to fetch details for a specific event, including the current user's RSVP status.
- * The returned data will be an Event object with an additional 'rsvp' property.
+ * Custom hook to fetch details for a specific event, including the current user's RSVP status and host details.
+ * The returned data will be an Event object with additional 'rsvp' and 'hostDetails' properties.
  *
  * @param eventId The ID of the event to fetch.
- * @returns An object containing `data` (Event with rsvp, or null), `isLoading`, `isError`, and `error`.
+ * @returns An object containing `data` (Event with rsvp and hostDetails, or null), `isLoading`, `isError`, and `error`.
  */
+  // TODO: Fix type pls
+
 export const useEventDetails = (eventId: string | undefined) => {
-  return useQuery<(EventDetails) | null, Error>({ // Use the inline intersection type here
+  return useQuery<(EventDetails & { hostDetails: { full_name: string | null; username: string | null } | null }) | null, Error>({
     queryKey: ['eventDetails', eventId],
     queryFn: () => fetchEventAndUserRsvp(eventId as string),
     enabled: !!eventId,

@@ -13,6 +13,7 @@ import { AuthProvider } from '@/providers/AuthProvider';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { BottomSheetProvider } from '@/providers/BottomSheetProvider';
+import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
@@ -21,8 +22,6 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 if (typeof globalThis.structuredClone !== 'function') {
   globalThis.structuredClone = (obj) => JSON.parse(JSON.stringify(obj));
 }
-
-
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -43,20 +42,19 @@ export default function RootLayout() {
 
 
 
-  // TODO: Check with gpt if wraping with safe area view is good
   return (
-      // <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <ThemeProvider value={DefaultTheme}>
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
             <GestureHandlerRootView style={styles.container}>
             <BottomSheetProvider>
               <Slot />
-              <StatusBar style="inverted" />
+              <StatusBar style="dark" />
               </BottomSheetProvider>
             </GestureHandlerRootView>
           </AuthProvider>
         </QueryClientProvider>
-      // </ThemeProvider>
+      </ThemeProvider>
   );
 
 }
@@ -78,6 +76,5 @@ export default function RootLayout() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'red',
   }
 });

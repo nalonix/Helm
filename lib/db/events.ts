@@ -13,9 +13,7 @@ import { Alert } from 'react-native';
  * @returns {Promise<boolean>} True if the event was created successfully, false otherwise.
  */
 export async function createEvent(data: CreateEventFormData, organizerId: string): Promise<boolean> {
-  console.log('Attempting to create event:', data.title, 'by organizer:', organizerId);
 
-  console.log("🟢🟢🟢🟢🟢🟢🟢🔮🔮🧮🧮: ",data)
   let posterUrl: string | undefined = undefined;
 
   try {
@@ -51,7 +49,7 @@ export async function createEvent(data: CreateEventFormData, organizerId: string
 
       // Get the public URL of the uploaded image
       const { data: publicUrlData } = supabase.storage
-        .from('poster')
+        .from('posters')
         .getPublicUrl(filePath);
 
       if (publicUrlData) {
@@ -88,8 +86,8 @@ export async function createEvent(data: CreateEventFormData, organizerId: string
         title: data.title,
         description: data.description,
         date: data.date,
-        start_time: data.time,
-        end_time: data.time, // Assuming end_time is the same as start_time for now
+        start_time: data.startTime,
+        end_time: data.endTime, // Assuming end_time is the same as start_time for now
         poster: posterUrl, // Use the uploaded poster URL
         host: organizerId,
         address: addressJson,

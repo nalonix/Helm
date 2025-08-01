@@ -11,6 +11,7 @@ module.exports = {
         'helm-dark-red': '#BB4017',  
         'helm-coral': '#D16548', 
         'helm-dark-background': '#241504', 
+        'helm-orange-red': '#FF4D00'
       },
     },
   },

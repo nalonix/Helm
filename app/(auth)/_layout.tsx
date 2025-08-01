@@ -9,8 +9,6 @@ export default function AuthLayout() {
         return <Redirect href="/(app)/(tabs)/events" />;
     }
 
-    // TODO: flashing white background on navigation
-
     return (
         <Stack 
             screenOptions={{

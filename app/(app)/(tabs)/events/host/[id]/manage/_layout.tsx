@@ -8,6 +8,7 @@ import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import General from './_top-tabs/general';
 import Guest from './_top-tabs/guest';
+import Invitations from './_top-tabs/invitations';
 import RSVP from './_top-tabs/rsvp';
 
 
@@ -16,7 +17,7 @@ const Tab = createMaterialTopTabNavigator();
 // PillTabBar component (remains unchanged)
 function PillTabBar({ state, descriptors, navigation }: MaterialTopTabBarProps) {
   return (
-    <View className="flex-row bg-white py-3 pl-5 gap-4">
+    <View className="flex-row bg-white py-3 pl-3 gap-3">
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
         let label: string =
@@ -34,9 +35,9 @@ function PillTabBar({ state, descriptors, navigation }: MaterialTopTabBarProps) 
                 navigation.navigate(route.name);
               }
             }}
-            className={`px-5 py-1 rounded-full border mx-0.5 ${isFocused ? 'bg-red-500 border-red-500' : 'bg-white border-red-500'}`}
+            className={`px-5 py-1 rounded-full border mx-0.5 ${isFocused ? 'bg-helm-dark-red border-helm-dark-red' : 'bg-white border-red-500'}`}
           >
-            <Text className={`${isFocused ? 'text-white' : 'text-red-500'} font-bold`}>{label}</Text>
+            <Text className={`${isFocused ? 'text-white' : 'text-helm-dark-red'} font-bold`}>{label}</Text>
           </TouchableOpacity>
         );
       })}
@@ -71,6 +72,7 @@ export default function ManageTabsLayout() {
         {/* These screens will now handle their own loading/error states for the data */}
         <Tab.Screen name="RSVP" component={RSVP} />
         <Tab.Screen name='Guest' component={Guest} />
+        <Tab.Screen name='Invitations' component={Invitations} />
         <Tab.Screen name="Settings" component={General} />
       </Tab.Navigator>
     </View>

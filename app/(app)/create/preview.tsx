@@ -1,33 +1,30 @@
 // @ts-nocheck
-import { useLocalSearchParams, useRouter } from 'expo-router';
-
-import React from 'react';
+import { Feather } from "@expo/vector-icons";
+import { format, parseISO } from "date-fns";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React from "react";
 import {
   Alert,
   Image,
   ImageBackground,
   ImageSourcePropType,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
   ScrollView,
   Text,
   TouchableOpacity,
-  TouchableWithoutFeedback,
-  View
-} from 'react-native';
+  View,
+} from "react-native";
 
 // Import modularized components and functions
-import { Button } from '@/components/Button';
-import { createEvent } from '@/lib/db/events'; // Import the event creation function
-import { useAuth } from '@/providers/AuthProvider'; // Import useAuth
-import { CreateEventFormData } from '@/schemas/eventSchema'; // Import the type
-import { useQueryClient } from '@tanstack/react-query';
+import { Button } from "@/components/Button";
+import { createEvent } from "@/lib/db/events"; // Import the event creation function
+import openMapApp from "@/lib/openMaps";
+import { formatTimeToAmPm } from "@/lib/timeFormat";
+import { useAuth } from "@/providers/AuthProvider"; // Import useAuth
+import { CreateEventFormData } from "@/schemas/eventSchema"; // Import the type
+import { useQueryClient } from "@tanstack/react-query";
 
-
-
-type WithPosterFn<T> = Omit<T, 'poster'> & {
-poster: () => { uri: string } | string;
+type WithPosterFn<T> = Omit<T, "poster"> & {
+  poster: () => { uri: string } | string;
 };
 
 export default function EventPreviewScreen() {
@@ -35,40 +32,43 @@ export default function EventPreviewScreen() {
   const router = useRouter();
   const { user } = useAuth(); // Get the authenticated user
   const params = useLocalSearchParams(); // Get parameters from the router
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
-
-
-  const defaultPoster = require('@/assets/images/default-poster.jpg');
+  const defaultPoster = require("@/assets/images/default-banner.jpg");
 
   // Cast params to your form data type
   const eventData: WithPosterFn<CreateEventFormData> = {
     title: params.title as string,
-    description: (params.description as string) || '',
+    description: (params.description as string) || "",
     date: params.date as string,
-    time: params.time as string,
+    start_time: params.startTime as string,
+    end_time: params.endTime as string,
     poster: params.poster as string,
     posterPreview: () => {
-      const defaultPoster = require('@/assets/images/default-poster.jpg');
-      let posterParam = params.poster as string
-      if (params.poster && (posterParam.startsWith('http') || posterParam.startsWith('file'))){
-        return { uri: posterParam}
-      } else{
-        return defaultPoster
+      const defaultPoster = require("@/assets/images/default-banner.jpg");
+      let posterParam = params.poster as string;
+      if (
+        params.poster &&
+        (posterParam.startsWith("http") || posterParam.startsWith("file"))
+      ) {
+        return { uri: posterParam };
+      } else {
+        return defaultPoster;
       }
     },
     locationName: params.locationName,
     country: params.country,
     city: params.city,
     longitude: params.longitude,
-    latitude: params.latitude
+    latitude: params.latitude,
   };
 
+  console.log("Poster preview: ",eventData.posterPreview())
 
   // Function to handle final submission to the database
   const handleFinalSubmit = async () => {
-    if(!user?.id) {
-      router.replace('/(auth)/login'); // Redirect to login if no user
+    if (!user?.id) {
+      router.replace("/(auth)/login"); // Redirect to login if no user
       return;
     }
 
@@ -79,12 +79,16 @@ export default function EventPreviewScreen() {
     const success = await createEvent(eventData, user.id); // Assuming eventData works as-is for now
     if (success) {
       // After successful submission, navigate away
-      Alert.alert('Event Created!', 'Your event has been successfully published.');
+      Alert.alert(
+        "Event Created!",
+        "Your event has been successfully published."
+      );
       // router.replace('/events'); // This was originally '/events', keeping it as is.
-      queryClient.invalidateQueries({ queryKey: ['myUpcomingEvents', user.id] });
+      queryClient.invalidateQueries({
+        queryKey: ["myUpcomingEvents", user.id],
+      });
 
-      router.replace('/(app)/(tabs)/events'); // If this is the correct path for your tabs, use this.
-      
+      router.replace("/(app)/(tabs)/events"); // If this is the correct path for your tabs, use this.
     }
     setLoading(false);
   };
@@ -92,88 +96,94 @@ export default function EventPreviewScreen() {
   return (
     <ImageBackground
       source={eventData.posterPreview() as ImageSourcePropType}
-      className="flex-1 w-full h-full justify-end items-center"
+      className="flex-1 w-full h-full pt-14"
       resizeMode="cover"
-      blurRadius={30}
+      blurRadius={40}
     >
-      {/* ONLY ADDED THIS OVERLAY FOR READABILITY (this is a good practice, but remove if you want 100% minimal) */}
-      <View className="absolute inset-0 bg-black/50" />
-
-      <View
-        className='rounded-t-xl overflow-hidden w-full h-[90%]'
-      >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-          <KeyboardAvoidingView
-            className="flex-1 pt-28 px-6 bg-helm-dark-background/85"
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
-          >
-
-            <ScrollView className="flex-1 mb-4 border border-red-500">
-              {/* ONLY ADDED THIS BLOCK: Display the non-blurred poster within the content area */}
-              <View className="w-full mb-6 aspect-square border-2 border-white/60 rounded-lg overflow-hidden">
-              {/* @ts-ignore */}
-                <Image
-                    source={eventData.posterPreview() as ImageSourcePropType}
-                    className="w-full h-full"
-                  />
-              </View>
-
-
-              <Text className="text-helm-beige text-xl font-semibold mb-2">Date:</Text>
-              <Text className="text-white text-lg mb-4">{eventData.date}</Text>
-
-              <Text className="text-helm-beige text-xl font-semibold mb-2">Title:</Text>
-              <Text className="text-white text-lg mb-4">{eventData.title}</Text>
-
-              <Text className="text-helm-beige text-xl font-semibold mb-2">Title:</Text>
-              <Text className="text-white text-lg mb-4">{eventData.title}</Text>
-
-              <Text className="text-helm-beige text-xl font-semibold mb-2">Location:</Text>
-              <Text className="text-white text-lg mb-4">{eventData.locationName}</Text>
-              <Text className="text-white text-lg mb-4">{eventData.country}</Text>
-
-              {eventData.description && (
-                <>
-                  <Text className="text-helm-beige text-xl font-semibold mb-2">Description:</Text>
-                  <Text className="text-white text-lg mb-4">{eventData.description}</Text>
-                </>
-              )}
-              {/* Keep these commented out as you had them */}
-              {/*
-              <Text className="text-helm-beige text-xl font-semibold mb-2">Date:</Text>
-              <Text className="text-white text-lg mb-4">{eventData.date}</Text>
-
-              <Text className="text-helm-beige text-xl font-semibold mb-2">Time:</Text>
-              <Text className="text-white text-lg mb-4">{eventData.time}</Text>
-
-              <Text className="text-helm-beige text-xl font-semibold mb-2">Location:</Text>
-              <Text className="text-white text-lg mb-4">{eventData.location}</Text>
-              */}
-
-              {/* Add other previewed fields here */}
-            </ScrollView>
-
-            {/* Submit Button */}
-            <View className="fixed bottom-28">
-              <Button
-                onPress={handleFinalSubmit}
-                isLoading={loading}
-                variant={"primary"}
-                className="mb-4"
-              >
-                Confirm & Create Event
-              </Button>
-
-              {/* Go Back / Edit Button */}
-              <View className="flex-row justify-center mt-2">
-                <TouchableOpacity onPress={() => router.back()}>
-                  <Text className="text-helm-dark-red font-semibold">Go Back & Edit</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </KeyboardAvoidingView>
-        </TouchableWithoutFeedback>
+      <ScrollView className="flex flex-grow w-full h-full px-5">
+        <View className="w-full">
+          <Poster url={eventData.posterPreview().uri || ""} />
+        </View>
+        <View className="w-full flex flex-col justify-start items-start py-2 rounded-lg bg-zinc-800/40 px-3">
+          <Text className="text-zinc-100 text-4xl font-bold w-full">
+            {eventData.title}
+          </Text>
+        </View>
+        {eventData.description && (
+          <View className="flex flex-col justify-center items-center w-full px-3 py-2 rounded-lg bg-zinc-800/40 mt-2">
+            <Text className="text-zinc-100 text-lg font-semibold w-full text-center">
+              About
+            </Text>
+            <Text className="text-zinc-100/90 w-full leading-5 text-center">
+              {eventData.description}
+            </Text>
+          </View>
+        )}
+        <View className="flex flex-row gap-2 mt-2">
+          <View className="p-2 rounded-lg bg-black/50">
+            <Feather name="clock" size={54} color="white" />
+          </View>
+          <View className="flex grow p-2 bg-zinc-800/40 rounded-lg">
+            <Text className="text-zinc-100 text-2xl font-extrabold">
+              {format(parseISO(eventData.date), "EEEE, MMMM d")}
+            </Text>
+            <Text className="text-zinc-100 text-lg">
+              {formatTimeToAmPm(eventData.start_time)} - {formatTimeToAmPm(eventData.end_time)}
+            </Text>
+          </View>
+        </View>
+        <TouchableOpacity
+          className="flex flex-row gap-2 mt-2"
+          onPress={() =>
+            openMapApp(
+              eventData.latitude || 0,
+              eventData.longitude || 0,
+              eventData.locationName || ""
+            )
+          }
+        >
+          <View className="p-2 rounded-lg bg-black/50">
+            <Feather name="map-pin" size={54} color="white" />
+          </View>
+          <View className="flex grow p-2 bg-zinc-800/40 rounded-lg">
+            <Text className="text-zinc-100 text-xl font-bold capitalize">
+              {eventData.locationName?.substring(0, 29)}...
+            </Text>
+            <Text className="text-zinc-100 text-lg capitalize">
+              {eventData.city}, {eventData.country}
+            </Text>
+          </View>
+        </TouchableOpacity>
+        {/* <View className="h-24" /> */}
+      <View className="w-full px-5 mt-5">
+        <Button
+          onPress={handleFinalSubmit}
+          isLoading={loading}
+          variant={"primary"}
+          className="mb-4"
+        >
+          Confirm & Create Event
+        </Button>
+        <TouchableOpacity onPress={() => router.back()} className="mt-2">
+          <Text className="text-center text-helm-dark-red font-semibold">
+            Go Back & Edit
+          </Text>
+        </TouchableOpacity>
       </View>
+        <View className="h-6"></View>
+            </ScrollView>
     </ImageBackground>
+  );
+}
+
+function Poster({ url }: { url: string }) {
+  return (
+    <View className="w-full rounded-lg mb-4 aspect-square">
+      <Image
+        source={{ uri: url }}
+        className="w-full h-full rounded-2xl border-2 border-zinc-100"
+        resizeMode="cover"
+      />
+    </View>
   );
 }

@@ -79,6 +79,7 @@ interface AppUser extends User {
   username?: string | null;
   full_name?: string | null;
   avatar_url?: string | null;
+  public: boolean;
 }
 
 export type AuthContextType = {
@@ -115,7 +116,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (session?.user) {
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
-          .select('username, full_name, avatar_url')
+          .select('username, full_name, avatar_url, public')
           .eq('id', session.user.id)
           .single();
 
@@ -128,6 +129,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             username: profile.username,
             full_name: profile.full_name,
             avatar_url: profile.avatar_url,
+            public: profile.public
           };
           setUser(combinedUser);
         } else {
@@ -148,7 +150,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (session?.user) {
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
-          .select('username, full_name, avatar_url')
+          .select('username, full_name, avatar_url, public')
           .eq('id', session.user.id)
           .single();
 
@@ -161,6 +163,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             username: profile.username,
             full_name: profile.full_name,
             avatar_url: profile.avatar_url,
+            public: profile.public
           };
           setUser(combinedUser);
         } else {

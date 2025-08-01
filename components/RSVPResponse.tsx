@@ -116,12 +116,12 @@ export default function RSVPResponse({ eventId, hostId, rsvpStatus, onSuccess }:
   };
 
   return (
-    <View className='flex-1 p-4'>
+    <View className='flex-1 w-full'>
       <Text className='text-lg font-semibold mb-3'>
-        Optional Message for your "{rsvpStatus}" RSVP:
+        Message (Optional):
       </Text>
       <TextInput
-        className='border border-gray-300 rounded-lg p-3 text-base mb-4 min-h-[80px] text-top'
+        className='flex flex-grow border border-gray-300 rounded-lg p-3 text-base mb-4 min-h-[80px] text-top'
         placeholder="Add a message (e.g., 'Looking forward to it!', 'Sorry I can't make it.')"
         value={message}
         onChangeText={setMessage}
@@ -131,13 +131,13 @@ export default function RSVPResponse({ eventId, hostId, rsvpStatus, onSuccess }:
 
       <TouchableOpacity
         onPress={handleSubmit}
-        className='bg-blue-600 p-4 rounded-lg items-center'
+        className='bg-helm-orange-red p-4 rounded-lg items-center'
         disabled={isPending || !userId || !eventId} // Disable while submitting or if data is missing
       >
         {isPending ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <Text className='text-white text-lg font-bold'>RSVP</Text>
+          <Text className='text-white text-lg font-bold'>Confirm</Text>
         )}
       </TouchableOpacity>
 

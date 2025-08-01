@@ -147,7 +147,7 @@ export default function NotificationsScreen() {
   return (
     <View className="flex-1 p-4 bg-gray-50">
       {isLoading ? (
-        <ActivityIndicator size="large" color="#3b82f6" className="mt-10" />
+        <ActivityIndicator size="large" color="#FF4D00" className="mt-10" />
       ) : isError ? (
         <Text className="text-red-600 text-center mt-5 text-base">
           Error: {error?.message || 'Failed to load notifications.'}
@@ -172,8 +172,10 @@ export default function NotificationsScreen() {
                   markAsReadMutation.mutate(item.id);
                 }
 
+
+
                 if(item.type == 'invitation'){
-                  router.push(`/(app)/(tabs)/events/${item.event_id}`)
+                  router.push(`/(app)/view/${item.event_id}`)
                 }else if(item.type == 'rsvpupdate'){
                   router.push(`/(app)/(tabs)/events/host/${item.event_id}/manage`)
                 }

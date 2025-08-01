@@ -3,19 +3,17 @@ import { addNotification } from "@/lib/db/notifications";
 import { supabase } from "@/lib/supabase";
 import { Feather } from "@expo/vector-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"; // Import useMutation and useQueryClient
-import { useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
   FlatList,
-  Image,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native"; // Import Alert for feedback
-import AvatarPlaceHolder from "./AvatarPlaceHolder";
+import Avatar from "./Avatar";
 
 // Type for a user profile returned by your search query
 interface UserProfile {
@@ -59,9 +57,11 @@ const fetchUsersAndInvitationStatus = async (
   username: string | null,
   eventId: string
 ): Promise<UserProfile[]> => {
+  
   if (!username || username.length < 3) {
     return [];
   }
+  
   if (!eventId) {
     console.warn(
       "Event ID is missing. Cannot determine invitation status for users."
@@ -85,6 +85,9 @@ const fetchUsersAndInvitationStatus = async (
     .ilike("username", `%${username}%`)
     .neq("id", user.id)
     .eq("public", true);
+
+    console.log("Searching for users with username:", username, profilesData);
+    
 
   if (profilesError) {
     console.error("Supabase profile search error:", profilesError);
@@ -122,15 +125,14 @@ const fetchUsersAndInvitationStatus = async (
   return usersWithStatus;
 };
 
-export default function UserSearchScreen() {
-  const { id: eventId } = useLocalSearchParams(); // eventId will be string | string[] | undefined
-
+export default function UserSearchScreen({ username, eventId }: { username?: string; eventId?: string }) {  
   // Ensure eventId is a string for the fetch functions and mutation
   const currentEventId = typeof eventId === "string" ? eventId : undefined;
 
   const [usernameSearchTerm, setUsernameSearchTerm] = useState("");
   const debouncedUsername = useDebounce(usernameSearchTerm, 500);
 
+  // TODO: should this be it's own hook?
   // Query for searching users
   const {
     data: searchResults,
@@ -152,11 +154,6 @@ export default function UserSearchScreen() {
 
   return (
     <View className="flex-1 p-2">
-      <View className="flex flex-row gap-3 items-end mb-4">
-        <Feather name="users" size={32} color="black" />
-        <Text className="text-3xl font-semibold">Invite</Text>
-      </View>
-
       <TextInput
         className="border border-gray-300 bg-zinc-100 rounded-lg p-3 text-base mb-4"
         placeholder="Search username..."
@@ -184,7 +181,7 @@ export default function UserSearchScreen() {
           data={searchResults}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <UserCard key={item.id} user={item} debouncedUsername={debouncedUsername} />
+            <UserCard key={item.id} currentEventId={eventId} user={item} debouncedUsername={debouncedUsername} />
           )}
           ListEmptyComponent={
             <Text className="text-gray-500 text-center mt-4">
@@ -205,16 +202,8 @@ export default function UserSearchScreen() {
   );
 }
 
-function UserCard({
-  user,
-  debouncedUsername,
-}: {
-  user: UserProfile;
-  debouncedUsername: string;
-}) {
-  const { id: eventId } = useLocalSearchParams(); 
-  const currentEventId = typeof eventId === "string" ? eventId : undefined;
-
+function UserCard({ currentEventId, user,debouncedUsername }: { currentEventId: string | undefined, user: UserProfile; debouncedUsername: string; }) {
+  
   const queryClient = useQueryClient(); 
   const {
     mutate: inviteUser,
@@ -243,7 +232,7 @@ function UserCard({
           {user.avatar_url ? (
             <Avatar url={user.avatar_url} />
           ) : (
-            <AvatarPlaceHolder />
+            <Avatar placeHolder />
           )}
         </View>
         <View className="flex-1 justify-center p-2">
@@ -282,13 +271,4 @@ function UserCard({
   );
 }
 
-function Avatar({ url }: { url: string }) {
-  return (
-    <Image
-      source={{
-        uri: supabase.storage.from("avatars").getPublicUrl(url).data.publicUrl,
-      }}
-      style={{ width: 40, height: 40, borderRadius: 20, marginRight: 12 }}
-    />
-  );
-}
+

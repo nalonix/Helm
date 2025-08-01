@@ -42,9 +42,9 @@ export default function TicketBottomSheetContent({
       </Text>
       {isCheckedIn && (
         // If checked in, show this
-        <View className="border-4 border-green-500 rounded-lg p-6 bg-green-100 items-center justify-center">
-          <Text className="text-3xl font-bold text-green-700 mb-2">
-            CHECKED IN!
+        <View className="mb-3 border border-green-500 rounded-lg px-7 py-2 bg-green-100 items-center justify-center">
+          <Text className="text-2xl font-bold text-green-700/90">
+            CHECKED IN
           </Text>
         </View>
       )}

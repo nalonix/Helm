@@ -11,6 +11,7 @@ const buttonVariants = cva(
       variant: {
         primary: "bg-white/80" ,
         secondary: "bg-zinc-200/40 text-white", 
+        danger: 'bg-red-500/10'
       },
       size: {
         default: "py-2", 
@@ -34,6 +35,7 @@ const buttonTextVariants = cva(
       variant: {
         primary: "text-black", // Text color for primary button
         secondary: "text-white", // Text color for secondary button
+        danger: "text-red-500", // Text color for danger button
       },
       size: {
         default: "text-lg",
