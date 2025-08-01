@@ -5,17 +5,17 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import {
   Alert,
-  Image,
   ImageBackground,
   ImageSourcePropType,
   ScrollView,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 
 // Import modularized components and functions
 import { Button } from "@/components/Button";
+import Poster from "@/components/Poster";
 import { createEvent } from "@/lib/db/events"; // Import the event creation function
 import openMapApp from "@/lib/openMaps";
 import { formatTimeToAmPm } from "@/lib/timeFormat";
@@ -35,6 +35,9 @@ export default function EventPreviewScreen() {
   const queryClient = useQueryClient();
 
   const defaultPoster = require("@/assets/images/default-banner.jpg");
+
+    console.log(params);
+
 
   // Cast params to your form data type
   const eventData: WithPosterFn<CreateEventFormData> = {
@@ -63,7 +66,7 @@ export default function EventPreviewScreen() {
     latitude: params.latitude,
   };
 
-  console.log("Poster preview: ",eventData.posterPreview())
+  
 
   // Function to handle final submission to the database
   const handleFinalSubmit = async () => {
@@ -102,7 +105,7 @@ export default function EventPreviewScreen() {
     >
       <ScrollView className="flex flex-grow w-full h-full px-5">
         <View className="w-full">
-          <Poster url={eventData.posterPreview().uri || ""} />
+          <Poster url={eventData.poster || ""} />
         </View>
         <View className="w-full flex flex-col justify-start items-start py-2 rounded-lg bg-zinc-800/40 px-3">
           <Text className="text-zinc-100 text-4xl font-bold w-full">
@@ -170,20 +173,8 @@ export default function EventPreviewScreen() {
           </Text>
         </TouchableOpacity>
       </View>
-        <View className="h-6"></View>
+        <View className="h-24"></View>
             </ScrollView>
     </ImageBackground>
-  );
-}
-
-function Poster({ url }: { url: string }) {
-  return (
-    <View className="w-full rounded-lg mb-4 aspect-square">
-      <Image
-        source={{ uri: url }}
-        className="w-full h-full rounded-2xl border-2 border-zinc-100"
-        resizeMode="cover"
-      />
-    </View>
   );
 }

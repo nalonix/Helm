@@ -174,6 +174,7 @@ export default function index() {
           <View className='flex-1 items-center justify-center gap-2 py-12'>
             <Feather name="alert-circle" size={36} color="gray" />
             <Text className='text-gray-500 text-lg'>No past events found.</Text>
+            <View className='h-16' />
           </View>
         )}
         ListHeaderComponent={renderHeader}

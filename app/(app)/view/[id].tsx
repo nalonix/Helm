@@ -1,9 +1,11 @@
 // src/app/events/[id].tsx (EventDetail component)
 import { Button } from "@/components/Button";
+import Poster from "@/components/Poster";
 import RSVPBottomSheetContent from "@/components/RSVPBottomSheetContent"; // Import the content component
 import { useBottomSheet } from "@/hooks/useBottomSheet"; // Import the new hook
 import { EventDetails, useEventDetails } from "@/hooks/useEventDetails";
 import openMapApp from "@/lib/openMaps"; // Import openMapApp
+import posterPreview from "@/lib/previewPoster";
 import { formatTimeToAmPm } from "@/lib/timeFormat"; // Import formatTimeToAmPm
 import { Feather } from "@expo/vector-icons";
 import { format, isSameDay, parseISO, startOfDay } from "date-fns";
@@ -11,12 +13,12 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import {
   ActivityIndicator,
-  Image,
   ImageBackground,
+  ImageSourcePropType,
   ScrollView,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import GetTicket from "./_components/GetTicket";
@@ -36,6 +38,8 @@ export default function EventDetail() {
     isError,
     error,
   } = useEventDetails(id as string);
+
+  console.log("🟢🟢🟢: ", event)
 
   const handleRsvpPress = (status: RsvpStatus) => {
     if (status) {
@@ -109,7 +113,7 @@ export default function EventDetail() {
 
   return (
     <ImageBackground
-      source={{ uri: event.poster || "" }}
+      source={posterPreview(event.poster) as ImageSourcePropType}
       className="flex-1 w-full h-full pt-14" // Ensure ImageBackground fills the screen
       resizeMode="cover"
       blurRadius={40}
@@ -241,17 +245,17 @@ export default function EventDetail() {
   );
 }
 
-function Poster({ url }: { url: string }) {
-  return (
-    <View className="w-full rounded-lg mb-4 aspect-square">
-      <Image
-        source={{ uri: url }}
-        className="w-full h-full rounded-2xl border-2 border-zinc-100"
-        resizeMode="cover"
-      />
-    </View>
-  );
-}
+// function Poster({ url }: { url: string }) {
+//   return (
+//     <View className="w-full rounded-lg mb-4 aspect-square">
+//       <Image
+//         source={{ uri: url }}
+//         className="w-full h-full rounded-2xl border-2 border-zinc-100"
+//         resizeMode="cover"
+//       />
+//     </View>
+//   );
+// }
 
 function Close() {
   const router = useRouter();
@@ -260,8 +264,7 @@ function Close() {
       onPress={() => router.back()}
       className="mb-4 p-2 items-center self-start bg-zinc-800/60 rounded-xl"
     >
-      <Feather name="x-circle" size={26} color="white" />{" "}
-      {/* Reverted to "invert" */}
+      <Feather name="x-circle" size={26} color="white" />
     </TouchableOpacity>
   );
 }

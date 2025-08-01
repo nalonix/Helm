@@ -34,18 +34,14 @@ interface CheckInResult {
   event_title?: string | null;
 }
 
-// Define the expected prefix for your app's QR codes
-
 const getStatusIcon = (status: CheckInResult['status'] | null) => {
-    switch (status) {
-      case 'success': return <Feather name="check-circle" size={24} color="white" className="mr-2" />;
-      case 'warning': return <Feather name="alert-triangle" size={24} color="white" className="mr-2" />;
-      case 'error': return <Feather name="x-circle" size={24} color="white" className="mr-2" />;
-      default: return <Feather name="maximize" size={24} color="white" className="mr-2" />; // Default for "Scan A Ticket"
-    }
-  };
-
-
+  switch (status) {
+    case 'success': return <Feather name="check-circle" size={24} color="white" className="mr-2" />;
+    case 'warning': return <Feather name="alert-triangle" size={24} color="white" className="mr-2" />;
+    case 'error': return <Feather name="x-circle" size={24} color="white" className="mr-2" />;
+    default: return <Feather name="maximize" size={24} color="white" className="mr-2" />; // Default for "Scan A Ticket"
+  }
+};
 
 export default function QRScanner() {
   // Get event data and loading/error states from the HostEventProvider context
@@ -57,10 +53,14 @@ export default function QRScanner() {
   const hostUserId = hostUser?.id;
 
   const [permission, requestPermission] = useCameraPermissions();
+  // CORRECTED: Initialize 'scanned' to true. This means scanning is INITIALLY PAUSED.
   const [scanned, setScanned] = useState(true);
   const [scanResult, setScanResult] = useState<CheckInResult | null>(null);
 
   const queryClient = useQueryClient();
+
+  // REMOVED: The useEffect that automatically requested permission on mount.
+  // Permission request will now be triggered by the "Tap to Scan" button.
 
   // Mutation to handle the client-side check-in process
   const { mutate: processCheckIn, isPending: isCheckingIn } = useMutation<
@@ -231,7 +231,7 @@ export default function QRScanner() {
     type,
     data,
   }: BarcodeScanningResult) => {
-    setScanned(true); // Pause scanning
+    setScanned(true); // Pause scanning after a scan is detected
     setScanResult(null); // Clear previous result
 
     // --- NEW: Prefix Check ---
@@ -242,7 +242,7 @@ export default function QRScanner() {
         username: null,
         event_title: null,
       });
-      setScanned(false); // Allow re-scan immediately for invalid format
+      setScanned(true); // Keep scanned true (paused) if invalid format
       return;
     }
 
@@ -255,7 +255,7 @@ export default function QRScanner() {
         status: "error",
         message: "You must be logged in to scan tickets.",
       });
-      setScanned(false); // Allow re-scan immediately if auth issue
+      setScanned(true); // Keep scanned true (paused) if auth issue
       return;
     }
     if (!event) {
@@ -264,13 +264,34 @@ export default function QRScanner() {
         status: "error",
         message: "Event data not loaded. Cannot proceed.",
       });
-      setScanned(false); // Allow re-scan immediately if data issue
+      setScanned(true); // Keep scanned true (paused) if data issue
       return;
     }
 
     // Trigger the mutation with the extracted ticket ID
     processCheckIn({ scannedTicketId: ticketId });
   };
+
+  // Function to handle the "Tap to Scan" button press
+  const handleStartScan = async () => {
+    // Request permission if not granted
+    if (!permission?.granted) {
+      const { status } = await requestPermission();
+      if (status !== 'granted') {
+        setScanResult({
+          status: "error",
+          message: "Camera permission denied. Cannot scan tickets.",
+          username: null,
+          event_title: null,
+        });
+        return; // Stop if permission is not granted
+      }
+    }
+    // If permission is granted, enable scanning
+    setScanned(false);
+    setScanResult(null); // Clear any previous scan result
+  };
+
 
   // --- Loading/Error UI from Context ---
   // This component will show its own loading/error if hostEventData isn't ready
@@ -287,7 +308,7 @@ export default function QRScanner() {
   if (isError || !event) {
     // If provider reported an error or event is null
     return (
-      <View className="flex-1 flex-col justify-center items-center bg-red-800 p-4">
+      <View className="flex-1 flex-col justify-center items-center bg-green-800 p-4">
         <Text className="text-white text-center text-lg">
           {isError
             ? `Error: ${error?.message || "Unknown error."}`
@@ -301,10 +322,14 @@ export default function QRScanner() {
   }
 
   // --- Camera Permission Handling UI ---
+  // Check permission status directly from the hook
   if (!permission) {
     return (
-      <View className="flex-1 flex-col justify-center items-center bg-black">
-        <Text className="text-white">Requesting for camera permission...</Text>
+      <View className="flex-1 flex-col justify-center items-center h-72 bg-blue-500 p-4">
+        <Text className="text-white text-center mb-5">
+          Requesting for camera permission...
+        </Text>
+        <ActivityIndicator size="large" color="white" />
       </View>
     );
   }
@@ -315,6 +340,7 @@ export default function QRScanner() {
         <Text className="text-white text-center mb-5">
           We need your permission to show the camera.
         </Text>
+        {/* Button to request permission directly */}
         <Button onPress={requestPermission} title="Grant Permission" />
       </View>
     );
@@ -352,6 +378,7 @@ export default function QRScanner() {
 
       <View className="mt-2 border-4 border-red-500 aspect-square flex flex-col justify-center items-center overflow-hidden rounded-lg bg-black">
         <CameraView
+          // onBarcodeScanned is only active when 'scanned' is false (meaning actively scanning)
           onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
           facing="back"
           barcodeScannerSettings={{
@@ -359,18 +386,17 @@ export default function QRScanner() {
           }}
           style={styles.cameraPreview}
         />
-        <Text className="absolute top-1/2 -mt-10 text-lg text-white bg-black/50 p-2.5 rounded-md z-10">
-          Scan A Ticket
-        </Text>
-        {/* Button to re-enable scanning if a result is shown */}
-        {scanned && !isCheckingIn && (
+        {/* Conditional text based on scanning state */}
+        {!scanned && !isCheckingIn && (
+          <Text className="absolute top-1/2 -mt-10 text-lg text-white bg-black/50 p-2.5 rounded-md z-10">
+            Scanning...
+          </Text>
+        )}
+        {scanned && !isCheckingIn && ( // Show "Tap to Scan" or "Tap to Scan New" when paused
           <View className="absolute bottom-5 z-10">
             <Button
-              title={"Tap to Scan New"}
-              onPress={() => {
-                setScanned(false);
-                setScanResult(null); // Clear result on "Scan New"
-              }}
+              title={scanResult ? "Tap to Scan New" : "Tap to Scan"} // Change button text
+              onPress={handleStartScan} // Use the new handler
             />
           </View>
         )}

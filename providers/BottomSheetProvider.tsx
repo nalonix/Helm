@@ -28,7 +28,7 @@ export const BottomSheetProvider: React.FC<BottomSheetProviderProps> = ({ childr
   const [sheetHeaderTitle, setSheetHeaderTitle] = useState<string | undefined>(undefined);
 
   // Snap points for full screen: 1% (almost closed) to 100% (full screen)
-  const snapPoints = useMemo(() => ['45%', '65%'], []);
+  const snapPoints = useMemo(() => ['65%'], []);
 
   const handleSheetChanges = useCallback((index: number) => {
     if (index === -1) {

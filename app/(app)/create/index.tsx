@@ -110,8 +110,8 @@ export default function CreateEventScreen() {
       title: "",
       description: "",
       date: "",
-      startTime: "",
-      endTime: "",
+      start_time: "",
+      end_time: "",
       locationName: "",
       city: "",
       country: "",
@@ -140,8 +140,8 @@ export default function CreateEventScreen() {
         title: data.title,
         description: data.description || "",
         date: data.date,
-        startTime: data.startTime,
-        endTime: data.endTime || "",
+        startTime: data.start_time,
+        endTime: data.end_time || "",
         locationName: data.locationName,
         city: data.city || "",
         country: data.country || "",
@@ -163,34 +163,39 @@ export default function CreateEventScreen() {
   const onTimeChange = (event: any, selected?: Date) => {
     setShowTimePicker(false);
     if (selected) {
-      console.log(
-        selected?.toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-          hourCycle: "h23",
-        })
-      );
+
       setTime(selected);
 
       setValue(
-        "startTime",
+        "start_time",
         selected.toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
+          second: "2-digit",
           hourCycle: "h23",
         })
       );
+
     }
   };
 
   const onEndTimeChange = (event: any, selected?: Date) => {
     setShowEndTimePicker(false);
     if (selected) {
+            console.log(
+        selected?.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hourCycle: "h23",
+        })
+      );
       const startDate = new Date(date || new Date());
       const startTimeParts = (
         time?.toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
+          second: "2-digit",
           hourCycle: "h23",
         }) || "00:00"
       ).split(":");
@@ -211,10 +216,11 @@ export default function CreateEventScreen() {
 
       setEndTime(selected);
       setValue(
-        "endTime",
+        "end_time",
         selected.toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
+          second: "2-digit",
           hourCycle: "h23",
         })
       );
@@ -370,7 +376,7 @@ export default function CreateEventScreen() {
               minimumDate={time ? new Date(time) : undefined}
             />
           )}
-         {/* Preview Button */}
+          {/* Preview Button */}
           <View className="mt-2">
             <Button
               onPress={handleSubmit(onPreview)}
@@ -387,7 +393,7 @@ export default function CreateEventScreen() {
             >
               <Text className="text-helm-orange-red">Cancel</Text>
             </Button>
-          <View className="h-48"></View>
+            <View className="h-48"></View>
           </View>
           {/* Added a bottom space to ensure the last button isn't immediately at the bottom edge */}
         </KeyboardAwareScrollView>

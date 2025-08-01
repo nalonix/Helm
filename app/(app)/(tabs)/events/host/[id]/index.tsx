@@ -1,6 +1,7 @@
 // src/app/events/host/[id].tsx
 
 import { Button } from "@/components/Button";
+import Poster from "@/components/Poster";
 import SendInvite from "@/components/SendInvite"; // Keep SendInvite for the invite button
 import { useBottomSheet } from "@/hooks/useBottomSheet";
 import { HostEvent } from "@/hooks/useHostEventData";
@@ -14,40 +15,18 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import {
   ActivityIndicator,
-  Image,
   ImageBackground,
   ImageSourcePropType,
   ScrollView,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import WeatherCard from "../../_components/WeatherCard"; // Assuming WeatherCard is still relevant for hosts
 
 
-function Poster({ url }: { url: string | null | undefined}) {
 
-  if (!url) {
-    return (<View className="w-full rounded-lg mb-4 aspect-square">
-      <Image
-        source={posterPreview(url) as ImageSourcePropType}
-        className="w-full h-full rounded-2xl border-2 border-zinc-100"
-        resizeMode="cover"
-      />
-    </View>)
-  }
-  
-  return (
-    <View className="w-full rounded-lg mb-4 aspect-square">
-      <Image
-        source={{ uri: url }}
-        className="w-full h-full rounded-2xl border-2 border-zinc-100"
-        resizeMode="cover"
-      />
-    </View>
-  );
-}
 
 function HostEventCloseAndActions({ id }: { id: string }) {
   const router = useRouter();

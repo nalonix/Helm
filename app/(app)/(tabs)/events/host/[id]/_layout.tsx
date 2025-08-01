@@ -49,7 +49,7 @@ function HostEventAuthorizationGate() {
     if (!isLoading && !isError && event && user) {
       if (event.host !== user.id) {
         Alert.alert('Unauthorized Access', 'You are not authorized to manage this event.');
-        router.replace(`/(app)/(tabs)/events/${id}`); // Redirect to public event detail page
+        router.replace(`/(app)/(tabs)/events`); // Redirect to public event detail page
       }
     }
   }, [isLoading, isError, event, user, id, router]);

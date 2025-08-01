@@ -7,6 +7,7 @@ import { router, Tabs } from 'expo-router';
 import React, { useCallback } from 'react';
 import { TouchableOpacity, View } from 'react-native';
 
+
 function SignOutButton() {
   const handleSignOut = useCallback(async () => {
     await supabase.auth.signOut();

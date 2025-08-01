@@ -13,6 +13,7 @@ import { Alert } from 'react-native';
  * @returns {Promise<boolean>} True if the event was created successfully, false otherwise.
  */
 export async function createEvent(data: CreateEventFormData, organizerId: string): Promise<boolean> {
+console.log("Create event 🧮🧮", data);
 
   let posterUrl: string | undefined = undefined;
 
@@ -64,9 +65,7 @@ export async function createEvent(data: CreateEventFormData, organizerId: string
       // you might want to handle this differently:
       // - If you want to store default image, upload it once and use its URL.
       // - If default image means no poster, set posterUrl to null.
-      // For now, assuming if it's not a local file URI, it's already a valid URL or null.
-      console.log("not a file");
-      
+      // For now, assuming if it's not a local file URI, it's already a valid URL or null.      
       posterUrl = data.poster;
     }
 
@@ -78,7 +77,7 @@ export async function createEvent(data: CreateEventFormData, organizerId: string
       longitude: data.longitude,
       latitude: data.latitude,
     };
-
+    
     // --- 3. Insert Event Data into Supabase Database ---
     const { error: insertError } = await supabase
       .from('events')
@@ -86,8 +85,8 @@ export async function createEvent(data: CreateEventFormData, organizerId: string
         title: data.title,
         description: data.description,
         date: data.date,
-        start_time: data.startTime,
-        end_time: data.endTime, // Assuming end_time is the same as start_time for now
+        start_time: data.start_time,
+        end_time: data.end_time, // Assuming end_time is the same as start_time for now
         poster: posterUrl, // Use the uploaded poster URL
         host: organizerId,
         address: addressJson,

@@ -7,7 +7,6 @@ import { format, parse } from 'date-fns';
  * @returns {string} The formatted time (e.g., "6:48 PM") or "N/A" if the input is invalid.
  */
 export function formatTimeToAmPm(timeString: string | undefined | null): string {
-  console.log('formatTimeToAmPm called with:', timeString);
   
   if (!timeString) {
     return 'N/A';
@@ -21,7 +20,7 @@ export function formatTimeToAmPm(timeString: string | undefined | null): string 
 
   try {
     // IMPORTANT: Changed 'HH:mm' to 'HH:mm:ss' to correctly parse the seconds part
-    const parsedTime = parse(timeString, 'HH:mm', referenceDate);
+    const parsedTime = parse(timeString, 'HH:mm:ss', referenceDate);
     return format(parsedTime, 'h:mm a');
   } catch (e) {
     console.error('Error parsing time:', timeString, e);

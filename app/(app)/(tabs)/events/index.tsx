@@ -151,9 +151,9 @@ export default function EventsIndex() {
               </Text>
             }
             ListEmptyComponent={
-              <View className="flex flex-col py-24">
-                <Feather name="cloud" size={48} color={"black"} />
-                <Text className="text-gray-500 text-center text-base">
+              <View className="flex flex-col items-center py-24 px-6">
+                <Feather name="cloud" size={48} color={"grey"} />
+                <Text className="text-gray-500 text-center text-lg">
                   No upcoming events found. Be the first to create one!
                 </Text>
               </View>
